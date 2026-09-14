@@ -75,7 +75,25 @@
 
 @media (max-width: 1024px) {
   .hero-model {
-    display: none;
+    display: block;
+    position: absolute;
+    top: 0;
+    right: -10%;
+    width: 60%;
+    height: 100%;
+    opacity: 0.5;
+  }
+
+  .hero-model-img {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 45%);
+    mask-image: linear-gradient(to right, transparent 0%, black 45%);
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-model {
+    width: 70%;
+    opacity: 0.35;
   }
 }
 
