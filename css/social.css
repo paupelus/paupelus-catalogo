@@ -168,3 +168,58 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Tutoriales Section Placeholder */
+.tutorials-section {
+  background: radial-gradient(circle at 50% 50%, rgba(26, 22, 38, 0.45) 0%, rgba(12, 11, 15, 0.92) 70%);
+}
+
+.tutorials-placeholder-card {
+  max-width: 680px;
+  margin: 3rem auto 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.tutorials-placeholder-card:hover {
+  border-color: var(--border-active);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(230, 200, 135, 0.08);
+  transform: translateY(-3px);
+}
+
+.tutorials-placeholder-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  background: rgba(230, 200, 135, 0.12);
+  border: 1px solid rgba(230, 200, 135, 0.35);
+  color: var(--gold-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutorials-placeholder-card h3 {
+  font-family: var(--font-serif);
+  font-size: 1.65rem;
+  color: var(--text-main);
+  margin-bottom: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.tutorials-placeholder-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto;
+}
+

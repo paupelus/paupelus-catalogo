@@ -39,6 +39,10 @@ html {
   color: var(--text-main);
 }
 
+section[id] {
+  scroll-margin-top: 110px;
+}
+
 body {
   font-family: var(--font-sans);
   background: radial-gradient(circle at 50% 0%, #1c1926 0%, #0c0b0f 70%);

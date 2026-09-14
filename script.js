@@ -1052,7 +1052,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Filtros de categoría y subcategoría
+  // Función unificada para aplicar filtro y sincronizar controles
+  function applyCatalogFilter(category = 'all', subcategoria = '') {
+    const allFilterBtns = document.querySelectorAll('.filter-btn');
+    allFilterBtns.forEach(b => {
+      const bCat = b.getAttribute('data-category');
+      const bSub = b.getAttribute('data-subcategoria') || '';
+      if (category === 'all') {
+        b.classList.toggle('active', bCat === 'all');
+      } else {
+        b.classList.toggle('active', bCat === category && (!subcategoria || bSub === subcategoria));
+      }
+    });
+
+    // Sincronizar estado activo en items del dropdown desktop
+    document.querySelectorAll('.nav-dropdown-item').forEach(dItem => {
+      const dCat = dItem.getAttribute('data-category');
+      const dSub = dItem.getAttribute('data-subcategoria') || '';
+      dItem.classList.toggle('active', dCat === category && (!subcategoria || dSub === subcategoria));
+    });
+
+    const searchVal = document.getElementById('catalogSearch')?.value || '';
+    renderCatalog(category, searchVal, subcategoria);
+
+    const catalogoSection = document.getElementById('catalogo');
+    if (catalogoSection) {
+      catalogoSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  // Filtros de categoría y subcategoría (.filter-btn)
   const filterBtns = document.querySelectorAll('.filter-btn');
   filterBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1063,6 +1092,70 @@ document.addEventListener('DOMContentLoaded', async () => {
       const searchVal = document.getElementById('catalogSearch')?.value || '';
       renderCatalog(category, searchVal, subcategoria);
     });
+  });
+
+  // Navegación de Escritorio: Dropdown Pelucas y Accesorios
+  const navPelucasDropdownItem = document.getElementById('navPelucasDropdownItem');
+  const navPelucasTrigger = document.getElementById('navPelucasTrigger');
+
+  // Click en el trigger "PELUCAS" (Desktop): toggle del dropdown
+  navPelucasTrigger?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isOpen = navPelucasDropdownItem?.classList.toggle('open');
+    navPelucasTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  // Click en items del dropdown de Pelucas: Clásicas / Lace Front
+  document.querySelectorAll('.nav-dropdown-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      navPelucasDropdownItem?.classList.remove('open');
+      navPelucasTrigger?.setAttribute('aria-expanded', 'false');
+
+      const category = item.getAttribute('data-category') || 'pelucas';
+      const subcategoria = item.getAttribute('data-subcategoria') || '';
+      applyCatalogFilter(category, subcategoria);
+    });
+  });
+
+  // Cerrar dropdown al hacer click fuera
+  document.addEventListener('click', (e) => {
+    if (navPelucasDropdownItem && !navPelucasDropdownItem.contains(e.target)) {
+      navPelucasDropdownItem.classList.remove('open');
+      navPelucasTrigger?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Click en "ACCESORIOS" (Nav Desktop): filtra directo por accesorios y hace scroll
+  const navAccesorios = document.getElementById('navAccesoriosLink');
+  navAccesorios?.addEventListener('click', (e) => {
+    e.preventDefault();
+    navPelucasDropdownItem?.classList.remove('open');
+    navPelucasTrigger?.setAttribute('aria-expanded', 'false');
+    applyCatalogFilter('accesorios', '');
+  });
+
+  // Click en "Colección" (Nav Desktop): resetea filtro a 'all' y hace scroll
+  const navColeccion = document.getElementById('navColeccionLink');
+  navColeccion?.addEventListener('click', (e) => {
+    e.preventDefault();
+    navPelucasDropdownItem?.classList.remove('open');
+    navPelucasTrigger?.setAttribute('aria-expanded', 'false');
+    applyCatalogFilter('all', '');
+  });
+
+  // Click en "TUTORIALES" (Nav Desktop): scroll suave a la sección
+  const navTutoriales = document.getElementById('navTutorialesLink');
+  navTutoriales?.addEventListener('click', (e) => {
+    navPelucasDropdownItem?.classList.remove('open');
+    navPelucasTrigger?.setAttribute('aria-expanded', 'false');
+    const targetSection = document.getElementById('tutoriales');
+    if (targetSection) {
+      e.preventDefault();
+      targetSection.scrollIntoView({ behavior: 'smooth' });
+    }
   });
 
   // Búsqueda en vivo
@@ -1099,11 +1192,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   mobileMenuOverlay?.addEventListener('click', closeMobileMenu);
 
   document.querySelectorAll('.mobile-menu-item').forEach(item => {
-    item.addEventListener('click', () => {
+    item.addEventListener('click', (e) => {
       closeMobileMenu();
-      const catalogoSection = document.getElementById('catalogo');
-      if (catalogoSection) {
-        catalogoSection.scrollIntoView({ behavior: 'smooth' });
+      const targetId = item.getAttribute('data-target');
+      if (targetId) {
+        e.preventDefault();
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+          targetSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        const catalogoSection = document.getElementById('catalogo');
+        if (catalogoSection) {
+          catalogoSection.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     });
   });
