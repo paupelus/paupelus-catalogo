@@ -1077,6 +1077,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Modales y Drawer
+  // Menú Móvil Lateral de Categorías
+  const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+  const mobileMenuCloseBtn = document.getElementById('mobileMenuCloseBtn');
+  const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+  function openMobileMenu() {
+    document.getElementById('mobileMenuDrawer')?.classList.add('open');
+    document.getElementById('mobileMenuOverlay')?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileMenu() {
+    document.getElementById('mobileMenuDrawer')?.classList.remove('open');
+    document.getElementById('mobileMenuOverlay')?.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  mobileMenuBtn?.addEventListener('click', openMobileMenu);
+  mobileMenuCloseBtn?.addEventListener('click', closeMobileMenu);
+  mobileMenuOverlay?.addEventListener('click', closeMobileMenu);
+
+  document.querySelectorAll('.mobile-menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      closeMobileMenu();
+      const catalogoSection = document.getElementById('catalogo');
+      if (catalogoSection) {
+        catalogoSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
   document.getElementById('lightboxClose')?.addEventListener('click', closeProductModal);
   document.getElementById('lightboxModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'lightboxModal') closeProductModal();
@@ -1119,6 +1150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       closeProductModal();
       closeCartDrawer();
       closeCheckoutModal();
+      closeMobileMenu();
     }
   });
 

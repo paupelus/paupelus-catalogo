@@ -37,7 +37,7 @@
           <li><a href="#accesorios" class="nav-link" onclick="document.querySelector('[data-category=accesorios]').click()">Accesorios</a></li>
           <li><a href="#lives" class="nav-link">Lives & Feed</a></li>
         </ul>
-        <button class="mobile-menu-btn" aria-label="Abrir Menú" onclick="document.getElementById('cartDrawer').classList.add('open')">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir Menú de Categorías">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
       </nav>
@@ -118,9 +118,6 @@
     <!-- Filtros de Categorías y Búsqueda -->
     <div class="catalog-controls">
       <button class="filter-btn active" data-category="all">Ver Todo</button>
-      <button class="filter-btn" data-category="pelucas" data-subcategoria="seminatural">Pelucas Clásicas</button>
-      <button class="filter-btn" data-category="pelucas" data-subcategoria="lacefront">Pelucas Lace Front</button>
-      <button class="filter-btn" data-category="accesorios">Accesorios Especializados</button>
     </div>
 
     <div class="catalog-search-wrap">
@@ -197,6 +194,46 @@
       </div>
     </div>
   </section>
+
+  <!-- Overlay y Menú Lateral Móvil de Categorías -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+  <aside class="mobile-menu-drawer" id="mobileMenuDrawer" aria-label="Menú de Categorías">
+    <div class="mobile-menu-header">
+      <div class="mobile-menu-brand">
+        <span class="mobile-menu-tag">Colección 2026</span>
+        <h3 class="mobile-menu-title">Categorías</h3>
+      </div>
+      <button type="button" class="mobile-menu-close" id="mobileMenuCloseBtn" aria-label="Cerrar Menú">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="mobile-menu-nav">
+      <ul class="mobile-menu-list">
+        <li>
+          <button type="button" class="mobile-menu-item filter-btn" data-category="pelucas" data-subcategoria="seminatural">
+            <span class="mobile-menu-item-text">Pelucas Clásicas</span>
+            <svg class="mobile-menu-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="mobile-menu-item filter-btn" data-category="pelucas" data-subcategoria="lacefront">
+            <span class="mobile-menu-item-text">Pelucas Lace Front</span>
+            <svg class="mobile-menu-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="mobile-menu-item filter-btn" data-category="accesorios">
+            <span class="mobile-menu-item-text">Accesorios Especializados</span>
+            <svg class="mobile-menu-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </aside>
 
   <!-- Carrito Lateral Desplegable (Drawer) -->
   <div class="cart-overlay" id="cartOverlay"></div>
