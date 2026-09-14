@@ -76,11 +76,14 @@ export async function cargarListaProductos(consultar = true) {
       }
 
       listaProductosMemoria = items || [];
+      listaProductosMemoria.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }));
     }
 
-    const itemsAMostrar = listaProductosMemoria.filter(p => {
-      return vistaActual === 'activos' ? p.activo : !p.activo;
-    });
+    const itemsAMostrar = listaProductosMemoria
+      .filter(p => {
+        return vistaActual === 'activos' ? p.activo : !p.activo;
+      })
+      .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }));
 
     if (itemsAMostrar.length === 0) {
       if (vistaActual === 'papelera') {
