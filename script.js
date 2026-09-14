@@ -367,10 +367,12 @@ function closeCheckoutModal() {
   }
 
   // Resetea campos del paso 2
+  const payAllWrap = document.getElementById('checkoutPayAllWrap');
   const pagarTodoCheckbox = document.getElementById('checkoutPagarTodo');
   const selectMethod = document.getElementById('checkoutPaymentMethod');
   const boxTransferencia = document.getElementById('paymentContentTransferencia');
   const boxTarjeta = document.getElementById('paymentContentTarjeta');
+  if (payAllWrap) payAllWrap.style.display = 'flex';
   if (pagarTodoCheckbox) pagarTodoCheckbox.checked = false;
   if (selectMethod) selectMethod.value = '';
   if (boxTransferencia) boxTransferencia.style.display = 'none';
@@ -515,6 +517,7 @@ function handleCheckoutStep1Submit(e) {
 
 // Renderizado y sincronización visual del Paso 2
 function renderCheckoutStep2() {
+  const payAllWrap = document.getElementById('checkoutPayAllWrap');
   const pagarTodoCheckbox = document.getElementById('checkoutPagarTodo');
   const labelMonto = document.getElementById('step2LabelMonto');
   const valorAbono = document.getElementById('step2ValorAbono');
@@ -528,34 +531,48 @@ function renderCheckoutStep2() {
     pagarTodoCheckbox.checked = Boolean(checkoutData.pagarTodo);
   }
 
-  if (checkoutData.pagarTodo) {
-    if (labelMonto) labelMonto.innerText = 'Total del Pedido';
-    if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.totalCarrito);
-    if (valorSaldo) valorSaldo.innerText = formatPrice(0);
-  } else {
-    if (labelMonto) labelMonto.innerText = 'Abono Inicial';
-    if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.abono);
-    if (valorSaldo) valorSaldo.innerText = formatPrice(checkoutData.saldo);
-  }
-
-  if (transferMontoBold) {
-    transferMontoBold.innerText = formatPrice(checkoutData.montoAPagar);
-  }
-
   // Pre-seleccionar forma de pago si ya se había elegido anteriormente
   if (selectMethod) {
     selectMethod.value = checkoutData.formaPago || '';
   }
 
-  if (checkoutData.formaPago === 'transferencia') {
-    if (boxTransferencia) boxTransferencia.style.display = 'block';
-    if (boxTarjeta) boxTarjeta.style.display = 'none';
-  } else if (checkoutData.formaPago === 'tarjeta') {
+  if (checkoutData.formaPago === 'tarjeta') {
+    // Tarjeta de crédito: ocultar checkbox, pagar todo, saldo $0
+    if (payAllWrap) payAllWrap.style.display = 'none';
+    checkoutData.montoAPagar = checkoutData.totalCarrito;
+    if (labelMonto) labelMonto.innerText = 'Total del Pedido';
+    if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.totalCarrito);
+    if (valorSaldo) valorSaldo.innerText = formatPrice(0);
+
     if (boxTarjeta) boxTarjeta.style.display = 'block';
     if (boxTransferencia) boxTransferencia.style.display = 'none';
   } else {
-    if (boxTransferencia) boxTransferencia.style.display = 'none';
-    if (boxTarjeta) boxTarjeta.style.display = 'none';
+    // Transferencia u otra opción: mostrar checkbox y aplicar su estado
+    if (payAllWrap) payAllWrap.style.display = 'flex';
+
+    if (checkoutData.pagarTodo) {
+      checkoutData.montoAPagar = checkoutData.totalCarrito;
+      if (labelMonto) labelMonto.innerText = 'Total del Pedido';
+      if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.totalCarrito);
+      if (valorSaldo) valorSaldo.innerText = formatPrice(0);
+    } else {
+      checkoutData.montoAPagar = checkoutData.abono;
+      if (labelMonto) labelMonto.innerText = 'Abono Inicial';
+      if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.abono);
+      if (valorSaldo) valorSaldo.innerText = formatPrice(checkoutData.saldo);
+    }
+
+    if (transferMontoBold) {
+      transferMontoBold.innerText = formatPrice(checkoutData.montoAPagar);
+    }
+
+    if (checkoutData.formaPago === 'transferencia') {
+      if (boxTransferencia) boxTransferencia.style.display = 'block';
+      if (boxTarjeta) boxTarjeta.style.display = 'none';
+    } else {
+      if (boxTransferencia) boxTransferencia.style.display = 'none';
+      if (boxTarjeta) boxTarjeta.style.display = 'none';
+    }
   }
 }
 
@@ -590,17 +607,53 @@ function handlePaymentMethodChange(e) {
   const method = e.target.value;
   checkoutData.formaPago = method;
 
+  const payAllWrap = document.getElementById('checkoutPayAllWrap');
+  const pagarTodoCheckbox = document.getElementById('checkoutPagarTodo');
+  const labelMonto = document.getElementById('step2LabelMonto');
+  const valorAbono = document.getElementById('step2ValorAbono');
+  const valorSaldo = document.getElementById('step2ValorSaldo');
   const boxTransferencia = document.getElementById('paymentContentTransferencia');
   const boxTarjeta = document.getElementById('paymentContentTarjeta');
   const transferMontoBold = document.getElementById('transferMontoBold');
 
-  if (method === 'transferencia') {
-    if (boxTransferencia) boxTransferencia.style.display = 'block';
-    if (boxTarjeta) boxTarjeta.style.display = 'none';
-    if (transferMontoBold) transferMontoBold.innerText = formatPrice(checkoutData.montoAPagar);
-  } else if (method === 'tarjeta') {
+  if (method === 'tarjeta') {
+    // 1. Al seleccionar "Tarjeta de crédito":
+    // - Oculta el checkbox "Pagar todo de una vez"
+    if (payAllWrap) payAllWrap.style.display = 'none';
+    // - Fuerza montoAPagar = total del carrito y saldo = $0
+    checkoutData.montoAPagar = checkoutData.totalCarrito;
+    if (labelMonto) labelMonto.innerText = 'Total del Pedido';
+    if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.totalCarrito);
+    if (valorSaldo) valorSaldo.innerText = formatPrice(0);
+
     if (boxTarjeta) boxTarjeta.style.display = 'block';
     if (boxTransferencia) boxTransferencia.style.display = 'none';
+  } else if (method === 'transferencia') {
+    // 2. Al volver a seleccionar "Transferencia":
+    // - Vuelve a mostrar el checkbox "Pagar todo de una vez"
+    if (payAllWrap) payAllWrap.style.display = 'flex';
+
+    // - Recalcula montoAPagar y saldo según el estado del checkbox
+    const isPagarTodo = pagarTodoCheckbox ? pagarTodoCheckbox.checked : Boolean(checkoutData.pagarTodo);
+    checkoutData.pagarTodo = isPagarTodo;
+    checkoutData.montoAPagar = isPagarTodo ? checkoutData.totalCarrito : checkoutData.abono;
+
+    if (isPagarTodo) {
+      if (labelMonto) labelMonto.innerText = 'Total del Pedido';
+      if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.totalCarrito);
+      if (valorSaldo) valorSaldo.innerText = formatPrice(0);
+    } else {
+      if (labelMonto) labelMonto.innerText = 'Abono Inicial';
+      if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.abono);
+      if (valorSaldo) valorSaldo.innerText = formatPrice(checkoutData.saldo);
+    }
+
+    if (transferMontoBold) {
+      transferMontoBold.innerText = formatPrice(checkoutData.montoAPagar);
+    }
+
+    if (boxTransferencia) boxTransferencia.style.display = 'block';
+    if (boxTarjeta) boxTarjeta.style.display = 'none';
   } else {
     if (boxTransferencia) boxTransferencia.style.display = 'none';
     if (boxTarjeta) boxTarjeta.style.display = 'none';
@@ -663,11 +716,15 @@ function sendOrderToWhatsApp(formaPago) {
   text += `• *Dirección:* ${checkoutData.direccion}\n`;
   text += `• *Ciudad:* ${checkoutData.ciudad}\n\n`;
 
+  const esTarjeta = (formaPago === 'Tarjeta de crédito');
+  const montoFinal = esTarjeta ? checkoutData.totalCarrito : checkoutData.montoAPagar;
+  const saldoFinal = esTarjeta ? 0 : (checkoutData.pagarTodo ? 0 : checkoutData.saldo);
+  const detalleMonto = esTarjeta ? ' (Pago completo)' : (checkoutData.pagarTodo ? ' (Pago completo)' : ' (Abono inicial)');
+
   text += '💳 *Detalles del pago:*\n';
   text += `• *Forma de pago:* ${formaPago}\n`;
-  text += `• *Monto a pagar ahora:* ${formatPrice(checkoutData.montoAPagar)}${checkoutData.pagarTodo ? ' (Pago completo)' : ' (Abono inicial)'}\n`;
-  const saldoPendiente = checkoutData.pagarTodo ? 0 : checkoutData.saldo;
-  text += `• *Saldo pendiente:* ${formatPrice(saldoPendiente)}\n\n`;
+  text += `• *Monto a pagar ahora:* ${formatPrice(montoFinal)}${detalleMonto}\n`;
+  text += `• *Saldo pendiente:* ${formatPrice(saldoFinal)}\n\n`;
 
   if (formaPago === 'Transferencia') {
     text += '📸 *Importante:* Una vez realices la transferencia, envíanos por este mismo chat la captura de pantalla del comprobante para confirmar tu pedido más rápido. ¡Gracias!\n\n';
