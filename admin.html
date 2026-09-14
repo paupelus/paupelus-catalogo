@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paupelus Admin | Gestión de Catálogo</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="icon" type="image/png" href="logo dorado transparente.png">
+</head>
+<body>
+
+  <!-- Vista Login -->
+  <main class="admin-container" id="loginView">
+    <div class="admin-card" style="max-width: 420px; margin: 5rem auto;">
+      <div style="text-align:center; margin-bottom:1.5rem;">
+        <img src="logo dorado transparente.png" alt="Paupelus" class="admin-brand-logo" style="height: 80px; max-height: 80px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 10px rgba(230,200,135,0.2));">
+        <h2 style="margin-top: 1rem; font-size: 1.5rem;">Acceso Administrativo</h2>
+      </div>
+      <form id="loginForm" class="form-group" style="gap: 1rem;">
+        <div class="form-group">
+          <label for="loginEmail">Correo Electrónico</label>
+          <input type="email" id="loginEmail" class="admin-input" required placeholder="paula@paupelus.com">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" class="admin-input" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:0.5rem;">
+          Entrar
+        </button>
+        <div id="loginError" class="admin-msg error" style="display:none;"></div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Vista Panel Principal -->
+  <main class="admin-container" id="panelView" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+      <div style="display:flex; align-items:center; gap:1.2rem;">
+        <img src="logo dorado transparente.png" alt="Paupelus" class="admin-brand-logo" style="height: 60px; max-height: 60px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(230,200,135,0.2));">
+        <h1 style="font-family:var(--font-serif); font-size:1.8rem; color:var(--gold-primary);">Panel de Administración</h1>
+      </div>
+      <button id="btnLogout" class="card-action-btn" style="flex:none; padding: 0.6rem 1.2rem;">
+        Cerrar sesión
+      </button>
+    </div>
+
+    <!-- Formulario de Creación de Producto -->
+    <section class="admin-card">
+      <h2>Nuevo Producto</h2>
+      <form id="productForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="categoria">Categoría</label>
+            <select id="categoria" class="admin-select" required>
+              <option value="pelucas">Pelucas</option>
+              <option value="accesorios">Accesorios</option>
+            </select>
+          </div>
+          <div class="form-group" id="subcategoriaGroup">
+            <label for="subcategoriaSelect">Subcategoría (Peluca)</label>
+            <select id="subcategoriaSelect" class="admin-select">
+              <option value="">-- Selecciona --</option>
+              <option value="seminatural">Peluca Clásica</option>
+              <option value="lacefront">Peluca Lace Front</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" class="admin-input" required placeholder="Ej. Caramel Wave HD">
+          </div>
+          <div class="form-group">
+            <label for="color">Color</label>
+            <input type="text" id="color" class="admin-input" placeholder="Ej. Castaño Miel">
+          </div>
+          <div class="form-group">
+            <label for="largo_cm">Largo (cm)</label>
+            <input type="number" id="largo_cm" class="admin-input" min="0" placeholder="Ej. 65">
+          </div>
+          <div class="form-group">
+            <label for="tipo">Tipo</label>
+            <input type="text" id="tipo" class="admin-input" placeholder="Ej. Ondulado / Lace 13x4">
+          </div>
+          <div class="form-group">
+            <label for="precio">Precio (COP)</label>
+            <input type="number" id="precio" class="admin-input" required min="0" placeholder="Ej. 185000">
+          </div>
+          <div class="form-group full-width">
+            <label for="descripcion">Descripción (opcional)</label>
+            <textarea id="descripcion" class="admin-textarea" rows="3" placeholder="Opcional"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="fotoInput">Foto del Producto (PNG, JPG)</label>
+            <input type="file" id="fotoInput" class="admin-input" accept="image/*" required>
+            <span id="fotoStatus" style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:0.3rem;"></span>
+          </div>
+          <div class="form-group">
+            <label for="videoInput">Video (opcional)</label>
+            <input type="file" id="videoInput" class="admin-input" accept="video/*">
+            <span id="videoStatus" style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:0.3rem;"></span>
+          </div>
+        </div>
+
+        <!-- Área de Previsualización y Procesado -->
+        <div class="preview-box">
+          <span id="processStatus" class="status-badge">Selecciona una foto y presiona "Procesar foto"</span>
+          <canvas id="previewCanvas" width="1000" height="1250"></canvas>
+        </div>
+
+        <div class="admin-actions" style="flex-direction:column; align-items:flex-start;">
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; cursor:pointer;">
+            <input type="checkbox" id="skipBgRemoval">
+            Ya quité el fondo yo mismo (subir tal cual, sin procesar con IA)
+          </label>
+          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <button type="button" id="btnProcesarFoto" class="btn-outline">
+              Procesar foto
+            </button>
+            <button type="button" id="btnGuardarProducto" class="btn-primary" disabled>
+              Guardar producto
+            </button>
+          </div>
+        </div>
+
+        <div id="panelMsg" class="admin-msg"></div>
+      </form>
+    </section>
+
+    <!-- Lista y Papelera de Productos -->
+    <section class="admin-card">
+      <h2>Gestión de Catálogo</h2>
+      <div class="admin-tabs" style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
+        <button id="tabActivos" class="filter-btn active">Productos</button>
+        <button id="tabPapelera" class="filter-btn">Papelera</button>
+      </div>
+      <div id="listaProductos">
+        <p style="color:var(--text-muted); font-size:0.9rem;">Cargando lista...</p>
+      </div>
+    </section>
+
+    <!-- Gestión de Reels ("Paupelus en Acción") -->
+    <section class="admin-card" id="seccionReels">
+      <h2>Gestión de Reels ("Paupelus en Acción")</h2>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-top:-1rem; margin-bottom:1.5rem;">
+        Configura los 4 reels fijados en la página de inicio. Puedes actualizar el link de TikTok o Instagram, el título descriptivo y subir una portada personalizada.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+        <!-- Posición 1 -->
+        <div class="reel-admin-card" style="background:#0d0c12; border:1px solid var(--border-subtle); border-radius:12px; padding:1.2rem; display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:var(--gold-light); font-size:1.05rem; margin:0;">Posición 1</h3>
+            <span class="badge-status badge-active" id="reelBadge_1" style="display:none;">Guardado</span>
+          </div>
+
+          <div class="form-group">
+            <label for="reelPlataforma_1">Plataforma</label>
+            <select id="reelPlataforma_1" class="admin-select">
+              <option value="TikTok">TikTok</option>
+              <option value="Instagram">Instagram</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reelTitulo_1">Título</label>
+            <input type="text" id="reelTitulo_1" class="admin-input" placeholder="Ej. Instalación indetectable">
+          </div>
+
+          <div class="form-group">
+            <label for="reelLink_1">Link (URL)</label>
+            <input type="url" id="reelLink_1" class="admin-input" placeholder="https://www.tiktok.com/@...">
+          </div>
+
+          <div class="form-group">
+            <label for="reelPortada_1">Portada (Imagen)</label>
+            <div style="display:flex; align-items:center; gap:0.8rem;">
+              <img id="reelPreview_1" src="" alt="Preview" style="width:50px; height:75px; object-fit:cover; border-radius:6px; background:#171520; display:none; border:1px solid var(--border-subtle);">
+              <div style="flex:1;">
+                <input type="file" id="reelPortada_1" class="admin-input" accept="image/*" style="font-size:0.8rem; padding:0.4rem 0.6rem;">
+                <span id="reelPortadaStatus_1" style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.2rem;">Sin imagen personalizada</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:auto; padding-top:0.5rem;">
+            <button type="button" class="btn-primary" id="btnGuardarReel_1" style="width:100%; justify-content:center;">
+              Guardar Posición 1
+            </button>
+            <div id="reelMsg_1" class="admin-msg" style="margin-top:0.5rem;"></div>
+          </div>
+        </div>
+
+        <!-- Posición 2 -->
+        <div class="reel-admin-card" style="background:#0d0c12; border:1px solid var(--border-subtle); border-radius:12px; padding:1.2rem; display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:var(--gold-light); font-size:1.05rem; margin:0;">Posición 2</h3>
+            <span class="badge-status badge-active" id="reelBadge_2" style="display:none;">Guardado</span>
+          </div>
+
+          <div class="form-group">
+            <label for="reelPlataforma_2">Plataforma</label>
+            <select id="reelPlataforma_2" class="admin-select">
+              <option value="Instagram">Instagram</option>
+              <option value="TikTok">TikTok</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reelTitulo_2">Título</label>
+            <input type="text" id="reelTitulo_2" class="admin-input" placeholder="Ej. Cambio de look express">
+          </div>
+
+          <div class="form-group">
+            <label for="reelLink_2">Link (URL)</label>
+            <input type="url" id="reelLink_2" class="admin-input" placeholder="https://www.instagram.com/reel/...">
+          </div>
+
+          <div class="form-group">
+            <label for="reelPortada_2">Portada (Imagen)</label>
+            <div style="display:flex; align-items:center; gap:0.8rem;">
+              <img id="reelPreview_2" src="" alt="Preview" style="width:50px; height:75px; object-fit:cover; border-radius:6px; background:#171520; display:none; border:1px solid var(--border-subtle);">
+              <div style="flex:1;">
+                <input type="file" id="reelPortada_2" class="admin-input" accept="image/*" style="font-size:0.8rem; padding:0.4rem 0.6rem;">
+                <span id="reelPortadaStatus_2" style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.2rem;">Sin imagen personalizada</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:auto; padding-top:0.5rem;">
+            <button type="button" class="btn-primary" id="btnGuardarReel_2" style="width:100%; justify-content:center;">
+              Guardar Posición 2
+            </button>
+            <div id="reelMsg_2" class="admin-msg" style="margin-top:0.5rem;"></div>
+          </div>
+        </div>
+
+        <!-- Posición 3 -->
+        <div class="reel-admin-card" style="background:#0d0c12; border:1px solid var(--border-subtle); border-radius:12px; padding:1.2rem; display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:var(--gold-light); font-size:1.05rem; margin:0;">Posición 3</h3>
+            <span class="badge-status badge-active" id="reelBadge_3" style="display:none;">Guardado</span>
+          </div>
+
+          <div class="form-group">
+            <label for="reelPlataforma_3">Plataforma</label>
+            <select id="reelPlataforma_3" class="admin-select">
+              <option value="TikTok">TikTok</option>
+              <option value="Instagram">Instagram</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reelTitulo_3">Título</label>
+            <input type="text" id="reelTitulo_3" class="admin-input" placeholder="Ej. Desenredado y cuidado">
+          </div>
+
+          <div class="form-group">
+            <label for="reelLink_3">Link (URL)</label>
+            <input type="url" id="reelLink_3" class="admin-input" placeholder="https://www.tiktok.com/@...">
+          </div>
+
+          <div class="form-group">
+            <label for="reelPortada_3">Portada (Imagen)</label>
+            <div style="display:flex; align-items:center; gap:0.8rem;">
+              <img id="reelPreview_3" src="" alt="Preview" style="width:50px; height:75px; object-fit:cover; border-radius:6px; background:#171520; display:none; border:1px solid var(--border-subtle);">
+              <div style="flex:1;">
+                <input type="file" id="reelPortada_3" class="admin-input" accept="image/*" style="font-size:0.8rem; padding:0.4rem 0.6rem;">
+                <span id="reelPortadaStatus_3" style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.2rem;">Sin imagen personalizada</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:auto; padding-top:0.5rem;">
+            <button type="button" class="btn-primary" id="btnGuardarReel_3" style="width:100%; justify-content:center;">
+              Guardar Posición 3
+            </button>
+            <div id="reelMsg_3" class="admin-msg" style="margin-top:0.5rem;"></div>
+          </div>
+        </div>
+
+        <!-- Posición 4 -->
+        <div class="reel-admin-card" style="background:#0d0c12; border:1px solid var(--border-subtle); border-radius:12px; padding:1.2rem; display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:var(--gold-light); font-size:1.05rem; margin:0;">Posición 4</h3>
+            <span class="badge-status badge-active" id="reelBadge_4" style="display:none;">Guardado</span>
+          </div>
+
+          <div class="form-group">
+            <label for="reelPlataforma_4">Plataforma</label>
+            <select id="reelPlataforma_4" class="admin-select">
+              <option value="Instagram">Instagram</option>
+              <option value="TikTok">TikTok</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reelTitulo_4">Título</label>
+            <input type="text" id="reelTitulo_4" class="admin-input" placeholder="Ej. Test de calor y peinado">
+          </div>
+
+          <div class="form-group">
+            <label for="reelLink_4">Link (URL)</label>
+            <input type="url" id="reelLink_4" class="admin-input" placeholder="https://www.instagram.com/reel/...">
+          </div>
+
+          <div class="form-group">
+            <label for="reelPortada_4">Portada (Imagen)</label>
+            <div style="display:flex; align-items:center; gap:0.8rem;">
+              <img id="reelPreview_4" src="" alt="Preview" style="width:50px; height:75px; object-fit:cover; border-radius:6px; background:#171520; display:none; border:1px solid var(--border-subtle);">
+              <div style="flex:1;">
+                <input type="file" id="reelPortada_4" class="admin-input" accept="image/*" style="font-size:0.8rem; padding:0.4rem 0.6rem;">
+                <span id="reelPortadaStatus_4" style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.2rem;">Sin imagen personalizada</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:auto; padding-top:0.5rem;">
+            <button type="button" class="btn-primary" id="btnGuardarReel_4" style="width:100%; justify-content:center;">
+              Guardar Posición 4
+            </button>
+            <div id="reelMsg_4" class="admin-msg" style="margin-top:0.5rem;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Avisar Live (Club Paupelus) -->
+    <section class="admin-card" id="seccionAvisarLive">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h2 style="margin-bottom:0.3rem;">Transmisiones en Vivo (Lives)</h2>
+          <p style="color:var(--text-muted); font-size:0.9rem; margin:0;">
+            Notifica por WhatsApp a los suscriptores del Club Paupelus cuando esté por iniciar un Live Shopping.
+          </p>
+        </div>
+        <button type="button" id="btnAvisarLive" class="btn-primary" style="display:inline-flex; align-items:center; gap:0.6rem;">
+          📢 Avisar Live
+        </button>
+      </div>
+
+      <!-- Contenedor desplegable de contactos pendientes -->
+      <div id="contenedorContactosLive" style="display:none; margin-top:1.5rem; border-top:1px solid var(--border-subtle); padding-top:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h3 style="color:var(--gold-light); font-size:1.1rem; margin:0;">
+            Contactos pendientes por avisar (<span id="contadorContactosLive">0</span>)
+          </h3>
+          <button type="button" id="btnCerrarContactosLive" class="card-action-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem;">
+            Ocultar lista
+          </button>
+        </div>
+        <div id="listaContactosLive">
+          <!-- Ítems generados dinámicamente -->
+        </div>
+      </div>
+
+      <div id="msgAvisarLive" class="admin-msg" style="margin-top:1rem;"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/admin/main.js"></script>
+</body>
+</html>

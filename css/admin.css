@@ -1,0 +1,180 @@
+/* Paupelus Admin - Panel de Administración & Gestión */
+
+.admin-container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+}
+
+.admin-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.admin-card h2 {
+  font-family: var(--font-serif);
+  color: var(--gold-primary);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.admin-input, .admin-select, .admin-textarea {
+  background: #100f16;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.25s ease;
+}
+
+.admin-input:focus, .admin-select:focus, .admin-textarea:focus {
+  border-color: var(--gold-primary);
+}
+
+.preview-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: #0d0c12;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+#previewCanvas {
+  max-width: 100%;
+  height: auto;
+  max-height: 420px;
+  border-radius: 8px;
+  background: repeating-conic-gradient(#1c1a24 0% 25%, #14131b 0% 50%) 50% / 20px 20px;
+}
+
+.status-badge {
+  font-size: 0.85rem;
+  color: var(--gold-light);
+}
+
+.admin-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.admin-msg {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  display: none;
+}
+
+.admin-msg.error {
+  display: block;
+  background: rgba(235, 87, 87, 0.15);
+  border: 1px solid rgba(235, 87, 87, 0.4);
+  color: #ff8585;
+}
+
+.admin-msg.success {
+  display: block;
+  background: rgba(39, 174, 96, 0.15);
+  border: 1px solid rgba(39, 174, 96, 0.4);
+  color: #6fcf97;
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.product-row:last-child {
+  border-bottom: none;
+}
+
+.product-thumb {
+  width: 55px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #171520;
+}
+
+.product-info {
+  flex: 1;
+}
+
+.product-info h4 {
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+}
+
+.product-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.badge-status {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-active {
+  background: rgba(39, 174, 96, 0.2);
+  color: #6fcf97;
+}
+
+.badge-inactive {
+  background: rgba(235, 87, 87, 0.2);
+  color: #ff8585;
+}
+
+.reel-admin-card {
+  background: #0d0c12;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
