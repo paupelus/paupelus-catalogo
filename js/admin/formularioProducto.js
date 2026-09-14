@@ -56,6 +56,15 @@ videoInput?.addEventListener('change', () => {
   }
 });
 
+// Evitar que la rueda del mouse cambie el valor de los inputs numéricos al hacer scroll con el campo enfocado
+precioInput?.addEventListener('wheel', function (e) {
+  e.preventDefault();
+});
+
+largoInput?.addEventListener('wheel', function (e) {
+  e.preventDefault();
+});
+
 export function getProductoEditandoId() {
   return productoEditandoId;
 }
