@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/catalog.css">
   <link rel="stylesheet" href="css/cart.css">
   <link rel="stylesheet" href="css/modal.css">
+  <link rel="stylesheet" href="css/checkout.css">
   <link rel="stylesheet" href="css/social.css">
   <link rel="stylesheet" href="css/footer.css">
   <link rel="icon" type="image/png" href="logo dorado transparente.png">
@@ -212,7 +213,7 @@
       </div>
       <button class="btn-checkout-whatsapp" id="checkoutWhatsAppBtn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg>
-        Confirmar Pedido por WhatsApp
+        Generar pedido por WhatsApp
       </button>
     </div>
   </aside>
@@ -269,6 +270,140 @@
         <button class="btn-primary" id="lightboxAddBtn" style="width:100%; justify-content:center;">
           Agregar a Mi Selección
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Checkout / Despacho en 2 Pasos -->
+  <div class="checkout-modal" id="checkoutModal" aria-modal="true" role="dialog">
+    <div class="checkout-modal-content">
+      <button type="button" class="checkout-close-btn" id="checkoutCloseBtn" aria-label="Cerrar modal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <!-- Encabezado e Indicador de Pasos -->
+      <div class="checkout-header">
+        <div class="checkout-steps-indicator">
+          <span class="step-badge active" id="step1Badge">Paso 1: Datos</span>
+          <span class="step-separator">›</span>
+          <span class="step-badge" id="step2Badge">Paso 2: Confirmación</span>
+        </div>
+        <h3 class="checkout-title" id="checkoutStepTitle">Datos de Entrega</h3>
+        <p class="checkout-subtitle" id="checkoutStepSubtitle">Ingresa tus datos personales para coordinar el envío y abono de tu orden.</p>
+      </div>
+
+      <!-- Alerta de validación de campos -->
+      <div id="checkoutErrorMsg" class="checkout-error-msg" style="display: none;"></div>
+
+      <!-- PASO 1: Formulario de datos personales -->
+      <form id="checkoutFormStep1" novalidate>
+        <div class="checkout-form-grid">
+          <div class="checkout-field full-width">
+            <label for="checkoutNombre">Nombre completo *</label>
+            <input type="text" id="checkoutNombre" class="checkout-input" placeholder="Ej. Paula Pérez" required autocomplete="name">
+          </div>
+
+          <div class="checkout-field">
+            <label for="checkoutCedula">Cédula * (solo números)</label>
+            <input type="text" id="checkoutCedula" class="checkout-input" placeholder="Ej. 1020304050" required inputmode="numeric" pattern="[0-9]+">
+          </div>
+
+          <div class="checkout-field">
+            <label for="checkoutCelular">Celular * (mínimo 10 dígitos)</label>
+            <input type="tel" id="checkoutCelular" class="checkout-input" placeholder="Ej. 3185182292" required inputmode="tel">
+          </div>
+
+          <div class="checkout-field full-width">
+            <label for="checkoutDireccion">Dirección exacta *</label>
+            <input type="text" id="checkoutDireccion" class="checkout-input" placeholder="Ej. Calle 123 # 45 - 67 Apto 301" required autocomplete="street-address">
+          </div>
+
+          <div class="checkout-field full-width">
+            <label for="checkoutCiudad">Ciudad *</label>
+            <input type="text" id="checkoutCiudad" class="checkout-input" placeholder="Ej. Bogotá, Medellín, Cali..." required>
+          </div>
+        </div>
+
+        <div class="checkout-actions">
+          <button type="button" id="checkoutBackBtn" class="btn-outline" style="padding: 0.75rem 1.4rem; font-size: 0.88rem;">
+            ← Atrás
+          </button>
+          <button type="submit" id="checkoutContinueBtn" class="btn-primary" style="padding: 0.75rem 1.8rem; font-size: 0.88rem;">
+            Continuar
+          </button>
+        </div>
+      </form>
+
+      <!-- PASO 2: Confirmación y Pago -->
+      <div id="checkoutStep2" style="display: none;">
+        <!-- 1. Resumen de montos -->
+        <div class="checkout-summary-card">
+          <div class="summary-item">
+            <span class="summary-label" id="step2LabelMonto">Abono Inicial</span>
+            <span class="summary-value highlight-gold" id="step2ValorAbono">$ 0</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-item">
+            <span class="summary-label">Saldo Contra Entrega</span>
+            <span class="summary-value" id="step2ValorSaldo">$ 0</span>
+          </div>
+        </div>
+
+        <!-- 2. Checkbox Pagar todo de una vez -->
+        <div class="checkout-pay-all-wrap">
+          <label class="checkout-checkbox-label" for="checkoutPagarTodo">
+            <input type="checkbox" id="checkoutPagarTodo" class="checkout-checkbox">
+            <span>Pagar todo de una vez</span>
+          </label>
+        </div>
+
+        <!-- 3. Selector desplegable Forma de pago -->
+        <div class="checkout-field full-width" style="margin-bottom: 0.5rem;">
+          <label for="checkoutPaymentMethod">Forma de pago *</label>
+          <select id="checkoutPaymentMethod" class="checkout-select">
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="tarjeta">Tarjeta de crédito</option>
+          </select>
+        </div>
+
+        <!-- 4. Contenido dinámico según la opción elegida -->
+        <div id="paymentContentTransferencia" class="payment-method-box" style="display: none;">
+          <div class="qr-container">
+            <img src="img/qr-pago.jpg" alt="Código QR Nequi / Daviplata" class="checkout-qr-img" onerror="this.onerror=null; this.src='logo dorado transparente.png';">
+          </div>
+          <p class="checkout-transfer-text" id="checkoutTransferText">
+            Transfiere <strong id="transferMontoBold">$ 0</strong> a este Nequi/Daviplata: <strong>3185182292</strong>
+          </p>
+          <div class="checkout-actions" style="margin-top: 1.2rem;">
+            <button type="button" class="btn-outline btn-step2-back" style="padding: 0.75rem 1.4rem; font-size: 0.88rem;">
+              ← Modificar datos
+            </button>
+            <button type="button" id="btnConfirmarTransferencia" class="btn-primary" style="padding: 0.75rem 1.8rem; font-size: 0.88rem;">
+              Ya pagué, enviar pedido
+            </button>
+          </div>
+        </div>
+
+        <div id="paymentContentTarjeta" class="payment-method-box" style="display: none;">
+          <div class="checkout-credit-card-notice">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="notice-icon">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+              <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
+            <p class="credit-card-text">
+              Un asesor te contactará en los próximos 5 minutos con el link de pago
+            </p>
+          </div>
+          <div class="checkout-actions" style="margin-top: 1.2rem;">
+            <button type="button" class="btn-outline btn-step2-back" style="padding: 0.75rem 1.4rem; font-size: 0.88rem;">
+              ← Modificar datos
+            </button>
+            <button type="button" id="btnConfirmarTarjeta" class="btn-primary" style="padding: 0.75rem 1.8rem; font-size: 0.88rem;">
+              Enviar pedido
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

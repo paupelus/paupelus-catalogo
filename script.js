@@ -246,28 +246,444 @@ function closeCartDrawer() {
   document.body.style.overflow = '';
 }
 
-// Checkout estructurado por WhatsApp
-function checkoutWhatsApp() {
-  if (cart.length === 0) {
+// Variable en memoria de la sesión para el flujo de Checkout en 2 Pasos
+let checkoutData = {
+  pasoActual: 1,
+  nombre: '',
+  cedula: '',
+  celular: '',
+  direccion: '',
+  ciudad: '',
+  abono: 0,
+  saldo: 0,
+  totalCarrito: 0,
+  pagarTodo: false,
+  montoAPagar: 0,
+  formaPago: '',
+  items: []
+};
+
+// Apertura del modal de Checkout
+function openCheckoutModal() {
+  if (!cart || cart.length === 0) {
     alert('Tu carrito está vacío. Agrega tus piezas favoritas antes de ordenar.');
     return;
   }
 
-  let text = '✨ *¡Hola Paupelus! Deseo ordenar las siguientes piezas de su catálogo:* \n\n';
-  let total = 0;
+  // Cerrar drawer del carrito para un flujo visual ordenado
+  closeCartDrawer();
 
-  cart.forEach((item, index) => {
-    const sub = item.price * item.qty;
-    total += sub;
-    text += `${index + 1}. *${item.name}* (x${item.qty}) - ${formatPrice(sub)}\n`;
+  const modal = document.getElementById('checkoutModal');
+  const step1Form = document.getElementById('checkoutFormStep1');
+  const step2Cont = document.getElementById('checkoutStep2');
+  const step1Badge = document.getElementById('step1Badge');
+  const step2Badge = document.getElementById('step2Badge');
+  const titleEl = document.getElementById('checkoutStepTitle');
+  const subtitleEl = document.getElementById('checkoutStepSubtitle');
+  const errorMsg = document.getElementById('checkoutErrorMsg');
+
+  if (errorMsg) {
+    errorMsg.style.display = 'none';
+    errorMsg.innerText = '';
+  }
+
+  // Pre-llenar campos del Paso 1 con datos guardados de un intento anterior si existen
+  const nombreInput = document.getElementById('checkoutNombre');
+  const cedulaInput = document.getElementById('checkoutCedula');
+  const celularInput = document.getElementById('checkoutCelular');
+  const direccionInput = document.getElementById('checkoutDireccion');
+  const ciudadInput = document.getElementById('checkoutCiudad');
+
+  if (nombreInput && checkoutData.nombre) nombreInput.value = checkoutData.nombre;
+  if (cedulaInput && checkoutData.cedula) cedulaInput.value = checkoutData.cedula;
+  if (celularInput && checkoutData.celular) celularInput.value = checkoutData.celular;
+  if (direccionInput && checkoutData.direccion) direccionInput.value = checkoutData.direccion;
+  if (ciudadInput && checkoutData.ciudad) ciudadInput.value = checkoutData.ciudad;
+
+  // Actualizar montos en checkoutData con el total vigente del carrito
+  const totalCarrito = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  checkoutData.totalCarrito = totalCarrito;
+  if (checkoutData.ciudad) {
+    const ciudadNorm = checkoutData.ciudad.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    checkoutData.abono = ciudadNorm.includes('bogota') ? 10000 : 25000;
+    checkoutData.saldo = Math.max(0, totalCarrito - checkoutData.abono);
+    checkoutData.montoAPagar = checkoutData.pagarTodo ? totalCarrito : checkoutData.abono;
+  }
+  checkoutData.items = [...cart];
+
+  // Si el cliente había llegado hasta el Paso 2 (ya había dado "Continuar"),
+  // al reabrir el modal debe abrir directo en el Paso 2
+  if (checkoutData.pasoActual === 2) {
+    if (step1Form) step1Form.style.display = 'none';
+    if (step2Cont) step2Cont.style.display = 'block';
+    if (step1Badge) step1Badge.classList.remove('active');
+    if (step2Badge) step2Badge.classList.add('active');
+    if (titleEl) titleEl.innerText = 'Confirmación de Pedido';
+    if (subtitleEl) subtitleEl.innerText = 'Revisa los detalles de tu orden y método de pago.';
+    renderCheckoutStep2();
+  } else {
+    // Abrir en Paso 1
+    if (step1Form) step1Form.style.display = 'block';
+    if (step2Cont) step2Cont.style.display = 'none';
+    if (step1Badge) step1Badge.classList.add('active');
+    if (step2Badge) step2Badge.classList.remove('active');
+    if (titleEl) titleEl.innerText = 'Datos de Entrega';
+    if (subtitleEl) subtitleEl.innerText = 'Ingresa tus datos personales para coordinar el envío y abono de tu orden.';
+  }
+
+  if (modal) {
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+// Cierre del modal y reseteo TOTAL (usado por la X, tecla Escape y tras enviar a WhatsApp)
+function closeCheckoutModal() {
+  const modal = document.getElementById('checkoutModal');
+  const step1Form = document.getElementById('checkoutFormStep1');
+  const step2Cont = document.getElementById('checkoutStep2');
+  const step1Badge = document.getElementById('step1Badge');
+  const step2Badge = document.getElementById('step2Badge');
+  const errorMsg = document.getElementById('checkoutErrorMsg');
+
+  if (modal) {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Reseteo de formulario y estado visual
+  if (step1Form) {
+    step1Form.reset();
+    step1Form.style.display = 'block';
+  }
+  if (step2Cont) {
+    step2Cont.style.display = 'none';
+  }
+  if (step1Badge) step1Badge.classList.add('active');
+  if (step2Badge) step2Badge.classList.remove('active');
+  if (errorMsg) {
+    errorMsg.style.display = 'none';
+    errorMsg.innerText = '';
+  }
+
+  // Resetea campos del paso 2
+  const pagarTodoCheckbox = document.getElementById('checkoutPagarTodo');
+  const selectMethod = document.getElementById('checkoutPaymentMethod');
+  const boxTransferencia = document.getElementById('paymentContentTransferencia');
+  const boxTarjeta = document.getElementById('paymentContentTarjeta');
+  if (pagarTodoCheckbox) pagarTodoCheckbox.checked = false;
+  if (selectMethod) selectMethod.value = '';
+  if (boxTransferencia) boxTransferencia.style.display = 'none';
+  if (boxTarjeta) boxTarjeta.style.display = 'none';
+
+  // Resetea datos guardados en memoria de la sesión
+  checkoutData = {
+    pasoActual: 1,
+    nombre: '',
+    cedula: '',
+    celular: '',
+    direccion: '',
+    ciudad: '',
+    abono: 0,
+    saldo: 0,
+    totalCarrito: 0,
+    pagarTodo: false,
+    montoAPagar: 0,
+    formaPago: '',
+    items: []
+  };
+}
+
+// Cierre temporal del modal CONSERVANDO los datos (usado por botón "← Atrás" del Paso 1 y click de overlay)
+function hideCheckoutModalKeepData() {
+  // Guarda lo que el usuario haya escrito en los inputs del Paso 1 para conservarlo
+  const nombreInput = document.getElementById('checkoutNombre');
+  const cedulaInput = document.getElementById('checkoutCedula');
+  const celularInput = document.getElementById('checkoutCelular');
+  const direccionInput = document.getElementById('checkoutDireccion');
+  const ciudadInput = document.getElementById('checkoutCiudad');
+
+  if (nombreInput && nombreInput.value) checkoutData.nombre = nombreInput.value.trim();
+  if (cedulaInput && cedulaInput.value) checkoutData.cedula = cedulaInput.value.trim();
+  if (celularInput && celularInput.value) checkoutData.celular = celularInput.value.trim();
+  if (direccionInput && direccionInput.value) checkoutData.direccion = direccionInput.value.trim();
+  if (ciudadInput && ciudadInput.value) checkoutData.ciudad = ciudadInput.value.trim();
+
+  const modal = document.getElementById('checkoutModal');
+  if (modal) {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+// Validación del Paso 1 y avance a Paso 2
+function handleCheckoutStep1Submit(e) {
+  e.preventDefault();
+
+  const errorMsg = document.getElementById('checkoutErrorMsg');
+  const nombreInput = document.getElementById('checkoutNombre');
+  const cedulaInput = document.getElementById('checkoutCedula');
+  const celularInput = document.getElementById('checkoutCelular');
+  const direccionInput = document.getElementById('checkoutDireccion');
+  const ciudadInput = document.getElementById('checkoutCiudad');
+
+  if (errorMsg) {
+    errorMsg.style.display = 'none';
+    errorMsg.innerText = '';
+  }
+
+  const nombre = nombreInput?.value.trim() || '';
+  const cedula = cedulaInput?.value.trim() || '';
+  const celularRaw = celularInput?.value.trim() || '';
+  const direccion = direccionInput?.value.trim() || '';
+  const ciudad = ciudadInput?.value.trim() || '';
+
+  // 1. Valida que todos los campos estén llenos
+  if (!nombre || !cedula || !celularRaw || !direccion || !ciudad) {
+    if (errorMsg) {
+      errorMsg.style.display = 'block';
+      errorMsg.innerText = 'Por favor completa todos los campos requeridos.';
+    }
+    return;
+  }
+
+  // 2. Cédula: solo números
+  if (!/^\d+$/.test(cedula)) {
+    if (errorMsg) {
+      errorMsg.style.display = 'block';
+      errorMsg.innerText = 'La cédula debe contener únicamente números.';
+    }
+    cedulaInput?.focus();
+    return;
+  }
+
+  // 3. Celular: mínimo 10 dígitos numéricos
+  const cleanCelular = celularRaw.replace(/[\s\-\(\)\+\.]/g, '');
+  if (!/^\d{10,}$/.test(cleanCelular)) {
+    if (errorMsg) {
+      errorMsg.style.display = 'block';
+      errorMsg.innerText = 'El número de celular debe tener al menos 10 dígitos numéricos.';
+    }
+    celularInput?.focus();
+    return;
+  }
+
+  // 4. Si la ciudad (en minúsculas, sin tildes) contiene "bogota", abono = 10000; si no, 25000
+  const ciudadNorm = ciudad
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  const abono = ciudadNorm.includes('bogota') ? 10000 : 25000;
+
+  // 5. Calcula saldo = total del carrito - abono
+  const totalCarrito = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const saldo = Math.max(0, totalCarrito - abono);
+
+  // 6. Guarda todos estos datos en variables (en memoria de la sesión)
+  checkoutData.nombre = nombre;
+  checkoutData.cedula = cedula;
+  checkoutData.celular = cleanCelular;
+  checkoutData.direccion = direccion;
+  checkoutData.ciudad = ciudad;
+  checkoutData.abono = abono;
+  checkoutData.saldo = saldo;
+  checkoutData.totalCarrito = totalCarrito;
+  checkoutData.pasoActual = 2;
+  if (checkoutData.pagarTodo === undefined) checkoutData.pagarTodo = false;
+  checkoutData.montoAPagar = checkoutData.pagarTodo ? totalCarrito : abono;
+  checkoutData.items = [...cart];
+
+  // 7. Avanza al PASO 2 (oculta paso 1, muestra paso 2 dentro del mismo modal)
+  const step1Form = document.getElementById('checkoutFormStep1');
+  const step2Cont = document.getElementById('checkoutStep2');
+  const step1Badge = document.getElementById('step1Badge');
+  const step2Badge = document.getElementById('step2Badge');
+  const titleEl = document.getElementById('checkoutStepTitle');
+  const subtitleEl = document.getElementById('checkoutStepSubtitle');
+
+  if (step1Form) step1Form.style.display = 'none';
+  if (step2Cont) step2Cont.style.display = 'block';
+  if (step1Badge) step1Badge.classList.remove('active');
+  if (step2Badge) step2Badge.classList.add('active');
+  if (titleEl) titleEl.innerText = 'Confirmación de Pedido';
+  if (subtitleEl) subtitleEl.innerText = 'Revisa los detalles de tu orden y método de pago.';
+
+  // Renderizar datos del Paso 2
+  renderCheckoutStep2();
+}
+
+// Renderizado y sincronización visual del Paso 2
+function renderCheckoutStep2() {
+  const pagarTodoCheckbox = document.getElementById('checkoutPagarTodo');
+  const labelMonto = document.getElementById('step2LabelMonto');
+  const valorAbono = document.getElementById('step2ValorAbono');
+  const valorSaldo = document.getElementById('step2ValorSaldo');
+  const selectMethod = document.getElementById('checkoutPaymentMethod');
+  const boxTransferencia = document.getElementById('paymentContentTransferencia');
+  const boxTarjeta = document.getElementById('paymentContentTarjeta');
+  const transferMontoBold = document.getElementById('transferMontoBold');
+
+  if (pagarTodoCheckbox) {
+    pagarTodoCheckbox.checked = Boolean(checkoutData.pagarTodo);
+  }
+
+  if (checkoutData.pagarTodo) {
+    if (labelMonto) labelMonto.innerText = 'Total del Pedido';
+    if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.totalCarrito);
+    if (valorSaldo) valorSaldo.innerText = formatPrice(0);
+  } else {
+    if (labelMonto) labelMonto.innerText = 'Abono Inicial';
+    if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.abono);
+    if (valorSaldo) valorSaldo.innerText = formatPrice(checkoutData.saldo);
+  }
+
+  if (transferMontoBold) {
+    transferMontoBold.innerText = formatPrice(checkoutData.montoAPagar);
+  }
+
+  // Pre-seleccionar forma de pago si ya se había elegido anteriormente
+  if (selectMethod) {
+    selectMethod.value = checkoutData.formaPago || '';
+  }
+
+  if (checkoutData.formaPago === 'transferencia') {
+    if (boxTransferencia) boxTransferencia.style.display = 'block';
+    if (boxTarjeta) boxTarjeta.style.display = 'none';
+  } else if (checkoutData.formaPago === 'tarjeta') {
+    if (boxTarjeta) boxTarjeta.style.display = 'block';
+    if (boxTransferencia) boxTransferencia.style.display = 'none';
+  } else {
+    if (boxTransferencia) boxTransferencia.style.display = 'none';
+    if (boxTarjeta) boxTarjeta.style.display = 'none';
+  }
+}
+
+// Manejo del checkbox "Pagar todo de una vez"
+function handlePagarTodoChange(e) {
+  const checked = e.target.checked;
+  checkoutData.pagarTodo = checked;
+  checkoutData.montoAPagar = checked ? checkoutData.totalCarrito : checkoutData.abono;
+
+  const labelMonto = document.getElementById('step2LabelMonto');
+  const valorAbono = document.getElementById('step2ValorAbono');
+  const valorSaldo = document.getElementById('step2ValorSaldo');
+  const transferMontoBold = document.getElementById('transferMontoBold');
+
+  if (checked) {
+    if (labelMonto) labelMonto.innerText = 'Total del Pedido';
+    if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.totalCarrito);
+    if (valorSaldo) valorSaldo.innerText = formatPrice(0);
+  } else {
+    if (labelMonto) labelMonto.innerText = 'Abono Inicial';
+    if (valorAbono) valorAbono.innerText = formatPrice(checkoutData.abono);
+    if (valorSaldo) valorSaldo.innerText = formatPrice(checkoutData.saldo);
+  }
+
+  if (transferMontoBold) {
+    transferMontoBold.innerText = formatPrice(checkoutData.montoAPagar);
+  }
+}
+
+// Manejo del selector desplegable de Forma de Pago
+function handlePaymentMethodChange(e) {
+  const method = e.target.value;
+  checkoutData.formaPago = method;
+
+  const boxTransferencia = document.getElementById('paymentContentTransferencia');
+  const boxTarjeta = document.getElementById('paymentContentTarjeta');
+  const transferMontoBold = document.getElementById('transferMontoBold');
+
+  if (method === 'transferencia') {
+    if (boxTransferencia) boxTransferencia.style.display = 'block';
+    if (boxTarjeta) boxTarjeta.style.display = 'none';
+    if (transferMontoBold) transferMontoBold.innerText = formatPrice(checkoutData.montoAPagar);
+  } else if (method === 'tarjeta') {
+    if (boxTarjeta) boxTarjeta.style.display = 'block';
+    if (boxTransferencia) boxTransferencia.style.display = 'none';
+  } else {
+    if (boxTransferencia) boxTransferencia.style.display = 'none';
+    if (boxTarjeta) boxTarjeta.style.display = 'none';
+  }
+}
+
+// Volver del Paso 2 al Paso 1 (conserva los datos)
+function returnToCheckoutStep1() {
+  checkoutData.pasoActual = 1;
+
+  const step1Form = document.getElementById('checkoutFormStep1');
+  const step2Cont = document.getElementById('checkoutStep2');
+  const step1Badge = document.getElementById('step1Badge');
+  const step2Badge = document.getElementById('step2Badge');
+  const titleEl = document.getElementById('checkoutStepTitle');
+  const subtitleEl = document.getElementById('checkoutStepSubtitle');
+
+  // Asegurar que los inputs del paso 1 sigan teniendo los valores guardados
+  const nombreInput = document.getElementById('checkoutNombre');
+  const cedulaInput = document.getElementById('checkoutCedula');
+  const celularInput = document.getElementById('checkoutCelular');
+  const direccionInput = document.getElementById('checkoutDireccion');
+  const ciudadInput = document.getElementById('checkoutCiudad');
+
+  if (nombreInput && checkoutData.nombre) nombreInput.value = checkoutData.nombre;
+  if (cedulaInput && checkoutData.cedula) cedulaInput.value = checkoutData.cedula;
+  if (celularInput && checkoutData.celular) celularInput.value = checkoutData.celular;
+  if (direccionInput && checkoutData.direccion) direccionInput.value = checkoutData.direccion;
+  if (ciudadInput && checkoutData.ciudad) ciudadInput.value = checkoutData.ciudad;
+
+  if (step1Form) step1Form.style.display = 'block';
+  if (step2Cont) step2Cont.style.display = 'none';
+  if (step1Badge) step1Badge.classList.add('active');
+  if (step2Badge) step2Badge.classList.remove('active');
+  if (titleEl) titleEl.innerText = 'Datos de Entrega';
+  if (subtitleEl) subtitleEl.innerText = 'Ingresa tus datos personales para coordinar el envío y abono de tu orden.';
+}
+
+// Enviar pedido estructurado a WhatsApp y vaciar carrito
+function sendOrderToWhatsApp(formaPago) {
+  const items = (checkoutData.items && checkoutData.items.length > 0) ? checkoutData.items : cart;
+  if (!items || items.length === 0) {
+    alert('Tu carrito está vacío.');
+    return;
+  }
+
+  let text = '✨ *¡Hola Paupelus! He confirmado mi pedido:* \n\n';
+
+  text += '🛍️ *Artículos solicitados:*\n';
+  items.forEach((item, index) => {
+    text += `${index + 1}. *${item.name}* (x${item.qty}) - ${formatPrice(item.price * item.qty)}\n`;
   });
 
-  text += `\n💎 *Total Estimado:* ${formatPrice(total)}\n`;
-  text += '📍 *Por favor indíquenme disponibilidad para envío inmediato y métodos de pago.*';
+  text += `\n💎 *Total del Pedido:* ${formatPrice(checkoutData.totalCarrito)}\n\n`;
+
+  text += '👤 *Datos del cliente:*\n';
+  text += `• *Nombre:* ${checkoutData.nombre}\n`;
+  text += `• *Cédula:* ${checkoutData.cedula}\n`;
+  text += `• *Celular:* ${checkoutData.celular}\n`;
+  text += `• *Dirección:* ${checkoutData.direccion}\n`;
+  text += `• *Ciudad:* ${checkoutData.ciudad}\n\n`;
+
+  text += '💳 *Detalles del pago:*\n';
+  text += `• *Forma de pago:* ${formaPago}\n`;
+  text += `• *Monto a pagar ahora:* ${formatPrice(checkoutData.montoAPagar)}${checkoutData.pagarTodo ? ' (Pago completo)' : ' (Abono inicial)'}\n`;
+  const saldoPendiente = checkoutData.pagarTodo ? 0 : checkoutData.saldo;
+  text += `• *Saldo pendiente:* ${formatPrice(saldoPendiente)}\n\n`;
+
+  if (formaPago === 'Transferencia') {
+    text += '📸 *Importante:* Una vez realices la transferencia, envíanos por este mismo chat la captura de pantalla del comprobante para confirmar tu pedido más rápido. ¡Gracias!\n\n';
+  }
+
+  text += '📍 *Por favor confírmenme la recepción del pedido y despacho. ¡Muchas gracias!*';
 
   const encoded = encodeURIComponent(text);
   const waUrl = `https://wa.me/573185182292?text=${encoded}`;
   window.open(waUrl, '_blank');
+
+  // Cierra el modal y vacía el carrito
+  closeCheckoutModal();
+  cart = [];
+  saveCart();
+  updateCartUI();
 }
 
 // Lightbox Modal para Vista Detallada
@@ -609,12 +1025,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('cartToggleBtn')?.addEventListener('click', openCartDrawer);
   document.getElementById('cartCloseBtn')?.addEventListener('click', closeCartDrawer);
   document.getElementById('cartOverlay')?.addEventListener('click', closeCartDrawer);
-  document.getElementById('checkoutWhatsAppBtn')?.addEventListener('click', checkoutWhatsApp);
+  // Modal de Checkout en 2 Pasos
+  document.getElementById('checkoutWhatsAppBtn')?.addEventListener('click', openCheckoutModal);
+  // La X: Cierra y resetea completamente el formulario y checkoutData
+  document.getElementById('checkoutCloseBtn')?.addEventListener('click', closeCheckoutModal);
+  // Botón "← Atrás": Conserva los datos y abre el carrito
+  document.getElementById('checkoutBackBtn')?.addEventListener('click', () => {
+    hideCheckoutModalKeepData();
+    openCartDrawer();
+  });
+  // Click fuera del modal: cierra sin borrar datos
+  document.getElementById('checkoutModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'checkoutModal') hideCheckoutModalKeepData();
+  });
+  document.getElementById('checkoutFormStep1')?.addEventListener('submit', handleCheckoutStep1Submit);
+
+  // Paso 2: Checkbox pagar todo, medio de pago y envío de pedido
+  document.getElementById('checkoutPagarTodo')?.addEventListener('change', handlePagarTodoChange);
+  document.getElementById('checkoutPaymentMethod')?.addEventListener('change', handlePaymentMethodChange);
+  document.getElementById('btnConfirmarTransferencia')?.addEventListener('click', () => sendOrderToWhatsApp('Transferencia'));
+  document.getElementById('btnConfirmarTarjeta')?.addEventListener('click', () => sendOrderToWhatsApp('Tarjeta de crédito'));
+  document.querySelectorAll('.btn-step2-back').forEach(btn => {
+    btn.addEventListener('click', returnToCheckoutStep1);
+  });
+
+  // Restricción a solo números en el input de cédula
+  document.getElementById('checkoutCedula')?.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '');
+  });
 
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeProductModal();
       closeCartDrawer();
+      closeCheckoutModal();
     }
   });
 
