@@ -111,6 +111,9 @@ export async function cargarListaProductos(consultar = true) {
             </div>
           </div>
           <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <button class="card-action-btn btn-copiar-link" data-id="${p.id}" style="padding:0.4rem 0.8rem; font-size:0.75rem; color:var(--gold-light); border-color:var(--border-subtle);">
+              🔗 Copiar link
+            </button>
             <button class="card-action-btn btn-editar-prod" data-id="${p.id}" style="padding:0.4rem 0.8rem; font-size:0.75rem; color:var(--gold-primary); border-color:var(--border-subtle);">
               Editar
             </button>
@@ -133,6 +136,38 @@ export async function cargarListaProductos(consultar = true) {
         </div>
       `;
     }).join('');
+
+    // Eventos Copiar Link
+    listaProductos.querySelectorAll('.btn-copiar-link').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const url = `${window.location.origin}/?producto=${id}`;
+
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(url);
+          } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = url;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+          }
+
+          const btnEl = e.currentTarget;
+          btnEl.innerText = '✅ Copiado';
+          setTimeout(() => {
+            btnEl.innerText = '🔗 Copiar link';
+          }, 2000);
+        } catch (err) {
+          console.error('Error al copiar link:', err);
+          prompt('Copia el link del producto:', url);
+        }
+      });
+    });
 
     // Eventos Editar
     listaProductos.querySelectorAll('.btn-editar-prod').forEach(btn => {

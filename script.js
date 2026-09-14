@@ -745,7 +745,7 @@ function sendOrderToWhatsApp(formaPago) {
 
 // Lightbox Modal para Vista Detallada
 function openProductModal(productId) {
-  const item = CATALOG_PRODUCTS.find(p => p.id === productId);
+  const item = CATALOG_PRODUCTS.find(p => String(p.id) === String(productId));
   if (!item) return;
 
   const modal = document.getElementById('lightboxModal');
@@ -1042,11 +1042,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderCatalog('all');
   updateCartUI();
 
-  // Apertura automática si existe el parámetro 'peluca' en la URL
+  // Apertura automática si existe el parámetro 'producto' en la URL
   const urlParams = new URLSearchParams(window.location.search);
-  const pelucaId = urlParams.get('peluca');
-  if (pelucaId && CATALOG_PRODUCTS.some(p => p.id === pelucaId)) {
-    openProductModal(pelucaId);
+  const productoId = urlParams.get('producto') || urlParams.get('peluca');
+  if (productoId) {
+    const itemEncontrado = CATALOG_PRODUCTS.find(p => String(p.id) === String(productoId));
+    if (itemEncontrado) {
+      openProductModal(itemEncontrado.id);
+    }
   }
 
   // Filtros de categoría y subcategoría
