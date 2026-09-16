@@ -114,24 +114,25 @@ export async function cargarListaProductos(consultar = true) {
             </div>
           </div>
           <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-            <button class="card-action-btn btn-copiar-link" data-id="${p.id}" style="padding:0.4rem 0.8rem; font-size:0.75rem; color:var(--gold-light); border-color:var(--border-subtle);">
+            <input type="number" class="input-numero-exhibicion" data-id="${p.id}" data-original-val="${p.numero_exhibicion ?? ''}" value="${p.numero_exhibicion ?? ''}" placeholder="N°" min="1" step="1" title="Número de Exhibición">
+            <button class="card-action-btn btn-copiar-link" data-id="${p.id}">
               🔗 Copiar link
             </button>
-            <button class="card-action-btn btn-editar-prod" data-id="${p.id}" style="padding:0.4rem 0.8rem; font-size:0.75rem; color:var(--gold-primary); border-color:var(--border-subtle);">
+            <button class="card-action-btn btn-editar-prod" data-id="${p.id}">
               Editar
             </button>
             ${p.activo ? `
-              <button class="card-action-btn btn-toggle-agotado" data-id="${p.id}" data-agotado="${Boolean(p.agotado)}" style="padding:0.4rem 0.8rem; font-size:0.75rem; color:${p.agotado ? 'var(--gold-light)' : 'var(--text-muted)'}; border-color:var(--border-subtle);">
+              <button class="card-action-btn btn-toggle-agotado" data-id="${p.id}" data-agotado="${Boolean(p.agotado)}">
                 ${p.agotado ? 'Marcar disponible' : 'Marcar agotado'}
               </button>
-              <button class="card-action-btn btn-toggle-status" data-id="${p.id}" data-activo="false" style="padding:0.4rem 0.8rem; font-size:0.75rem; color:#ff8585; border-color:rgba(235,87,87,0.3);">
+              <button class="card-action-btn btn-toggle-status" data-id="${p.id}" data-activo="false">
                 Eliminar
               </button>
             ` : `
-              <button class="card-action-btn btn-toggle-status" data-id="${p.id}" data-activo="true" style="padding:0.4rem 0.8rem; font-size:0.75rem; color:#6fcf97; border-color:rgba(39,174,96,0.3);">
+              <button class="card-action-btn btn-toggle-status" data-id="${p.id}" data-activo="true">
                 Restaurar
               </button>
-              <button class="card-action-btn btn-delete-definitivo" data-id="${p.id}" style="padding:0.4rem 0.8rem; font-size:0.75rem; color:#ff5252; background:rgba(255,82,82,0.08); border-color:rgba(255,82,82,0.35);">
+              <button class="card-action-btn btn-delete-definitivo" data-id="${p.id}">
                 Eliminar definitivo
               </button>
             `}
@@ -139,6 +140,57 @@ export async function cargarListaProductos(consultar = true) {
         </div>
       `;
     }).join('');
+
+    // Eventos Número de Exhibición (edición rápida en línea)
+    listaProductos.querySelectorAll('.input-numero-exhibicion').forEach(input => {
+      input.addEventListener('wheel', (e) => {
+        e.preventDefault();
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          input.blur();
+        }
+      });
+
+      input.addEventListener('blur', async () => {
+        const id = input.getAttribute('data-id');
+        const rawVal = input.value.trim();
+        const nuevoNumero = rawVal === '' ? null : parseInt(rawVal, 10);
+        const originalVal = input.getAttribute('data-original-val');
+        const anteriorNumero = (originalVal === '' || originalVal === null || originalVal === undefined) ? null : parseInt(originalVal, 10);
+
+        if (nuevoNumero === anteriorNumero) return;
+
+        try {
+          const { error } = await supabaseClient
+            .from('productos')
+            .update({ numero_exhibicion: nuevoNumero })
+            .eq('id', id);
+
+          if (error) throw error;
+
+          const prod = listaProductosMemoria.find(p => String(p.id) === String(id));
+          if (prod) prod.numero_exhibicion = nuevoNumero;
+          input.setAttribute('data-original-val', nuevoNumero != null ? nuevoNumero : '');
+
+          input.classList.remove('error');
+          input.classList.add('saved');
+          setTimeout(() => {
+            input.classList.remove('saved');
+          }, 1500);
+        } catch (err) {
+          console.error('Error al actualizar número de exhibición:', err);
+          input.classList.remove('saved');
+          input.classList.add('error');
+          alert(`No se pudo actualizar el N° de exhibición: ${err.message || err}`);
+          setTimeout(() => {
+            input.classList.remove('error');
+          }, 3000);
+        }
+      });
+    });
 
     // Eventos Copiar Link
     listaProductos.querySelectorAll('.btn-copiar-link').forEach(btn => {

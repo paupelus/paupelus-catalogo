@@ -178,3 +178,120 @@
   flex-direction: column;
   gap: 0.9rem;
 }
+
+/* Input Número de Exhibición en Lista */
+.input-numero-exhibicion {
+  width: 50px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+  padding: 6px 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  -moz-appearance: textfield;
+}
+
+.input-numero-exhibicion::-webkit-outer-spin-button,
+.input-numero-exhibicion::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input-numero-exhibicion:focus {
+  border-color: #d4af37;
+  outline: none;
+}
+
+.input-numero-exhibicion.saved {
+  border-color: #27ae60 !important;
+  box-shadow: 0 0 6px rgba(39, 174, 96, 0.5);
+}
+
+.input-numero-exhibicion.error {
+  border-color: #eb5757 !important;
+  box-shadow: 0 0 6px rgba(235, 87, 87, 0.5);
+}
+
+/* Botones de acción del panel con alto contraste */
+.card-action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.btn-copiar-link {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.btn-copiar-link:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.btn-editar-prod {
+  background: rgba(212, 175, 55, 0.18);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
+.btn-editar-prod:hover {
+  background: rgba(212, 175, 55, 0.3);
+}
+
+.btn-toggle-agotado {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.btn-toggle-agotado:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.btn-toggle-status,
+.btn-toggle-status[data-activo="false"] {
+  background: rgba(255, 80, 80, 0.15);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 80, 80, 0.4);
+}
+
+.btn-toggle-status[data-activo="false"]:hover {
+  background: rgba(255, 80, 80, 0.25);
+}
+
+.btn-toggle-status[data-activo="true"] {
+  background: rgba(39, 174, 96, 0.18);
+  color: #6fcf97;
+  border: 1px solid rgba(39, 174, 96, 0.4);
+}
+
+.btn-toggle-status[data-activo="true"]:hover {
+  background: rgba(39, 174, 96, 0.28);
+}
+
+.btn-delete-definitivo {
+  background: rgba(255, 82, 82, 0.18);
+  color: #ff5252;
+  border: 1px solid rgba(255, 82, 82, 0.45);
+}
+
+.btn-delete-definitivo:hover {
+  background: rgba(255, 82, 82, 0.3);
+}
+
