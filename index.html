@@ -53,6 +53,7 @@
           </li>
           <li><a href="#catalogo" class="nav-link" id="navAccesoriosLink" data-category="accesorios">Accesorios</a></li>
           <li><a href="#lives" class="nav-link">Lives & Feed</a></li>
+          <li><a href="#galeria" class="nav-link" id="navGaleriaLink">Galería</a></li>
           <li><a href="#tutoriales" class="nav-link" id="navTutorialesLink">Tutoriales</a></li>
         </ul>
         <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir Menú de Categorías">
@@ -182,6 +183,26 @@
     </div>
   </section>
 
+  <!-- Sección Galería de Videos Promocionales -->
+  <section class="social-live-section gallery-section" id="galeria">
+    <div class="social-container">
+      <div class="section-header">
+        <div class="live-badge" style="background: rgba(212, 175, 55, 0.15); color: var(--gold-primary); border-color: rgba(212, 175, 55, 0.3);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 0.2rem;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Videos Exclusivos
+        </div>
+        <h2 class="section-title">Galería Paupelus</h2>
+        <p class="section-subtitle">
+          Descubre el movimiento, brillo y caída natural de nuestras piezas en video de alta definición.
+        </p>
+      </div>
+
+      <div class="gallery-grid" id="galleryGrid">
+        <!-- Inyección dinámica desde script.js vía fetchGaleria() -->
+      </div>
+    </div>
+  </section>
+
   <!-- Sección Tutoriales: Masterclasses & Guías -->
   <section class="social-live-section tutorials-section" id="tutoriales">
     <div class="social-container">
@@ -286,6 +307,12 @@
           </button>
         </li>
         <li>
+          <a href="#galeria" class="mobile-menu-item" data-target="galeria">
+            <span class="mobile-menu-item-text">Galería</span>
+            <svg class="mobile-menu-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+        </li>
+        <li>
           <a href="#tutoriales" class="mobile-menu-item" data-target="tutoriales">
             <span class="mobile-menu-item-text">Tutoriales</span>
             <svg class="mobile-menu-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -379,6 +406,24 @@
         <button class="btn-primary" id="lightboxAddBtn" style="width:100%; justify-content:center;">
           Agregar a Mi Selección
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal para Videos de Galería (object-fit: contain, fondo negro, max-height: 80vh) -->
+  <div class="gallery-modal lightbox-modal" id="galleryLightboxModal" aria-modal="true" role="dialog">
+    <div class="gallery-lightbox-content">
+      <button type="button" class="lightbox-close-btn gallery-close-btn" id="galleryModalClose" aria-label="Cerrar video">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div class="gallery-player-container">
+        <video id="galleryModalVideo" controls playsinline preload="metadata" class="gallery-video-player"></video>
+      </div>
+
+      <div class="gallery-caption-box" id="galleryCaptionBox">
+        <h3 id="galleryModalTitle" class="gallery-modal-title"></h3>
+        <p id="galleryModalDesc" class="gallery-modal-desc"></p>
       </div>
     </div>
   </div>

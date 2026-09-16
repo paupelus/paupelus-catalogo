@@ -47,6 +47,16 @@
       </button>
     </div>
 
+    <!-- Navegación de Pestañas Principales del Panel -->
+    <div class="admin-main-tabs" style="display:flex; gap:0.6rem; margin-bottom:2rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; flex-wrap:wrap;">
+      <button type="button" class="filter-btn active" id="tabNavProductos">Catálogo</button>
+      <button type="button" class="filter-btn" id="tabNavReels">Reels ("En Acción")</button>
+      <button type="button" class="filter-btn" id="tabNavGaleria">Galería</button>
+      <button type="button" class="filter-btn" id="tabNavLives">Avisar Live</button>
+    </div>
+
+    <!-- Pestaña 1: Catálogo (Nuevo Producto + Gestión de Productos) -->
+    <div id="panelSeccionProductos">
     <!-- Formulario de Creación de Producto -->
     <section class="admin-card">
       <h2>Nuevo Producto</h2>
@@ -139,9 +149,10 @@
         <p style="color:var(--text-muted); font-size:0.9rem;">Cargando lista...</p>
       </div>
     </section>
+    </div>
 
     <!-- Gestión de Reels ("Paupelus en Acción") -->
-    <section class="admin-card" id="seccionReels">
+    <section class="admin-card" id="seccionReels" style="display:none;">
       <h2>Gestión de Reels ("Paupelus en Acción")</h2>
       <p style="color:var(--text-muted); font-size:0.9rem; margin-top:-1rem; margin-bottom:1.5rem;">
         Configura los 4 reels fijados en la página de inicio. Puedes actualizar el link de TikTok o Instagram, el título descriptivo y subir una portada personalizada.
@@ -326,8 +337,71 @@
       </div>
     </section>
 
+    <!-- Gestión de Galería de Videos Promocionales -->
+    <section class="admin-card" id="seccionGaleria" style="display:none;">
+      <h2>Galería de Videos Promocionales</h2>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-top:-1rem; margin-bottom:1.5rem;">
+        Gestiona los videos de la sección Galería del sitio público. Los videos se alojan en el bucket <code>videos-galeria</code> y las portadas en <code>fotos-pelucas</code>.
+      </p>
+
+      <!-- Formulario de Video de Galería -->
+      <form id="galeriaForm" style="margin-bottom:2.5rem; background:#0d0c12; border:1px solid var(--border-subtle); border-radius:12px; padding:1.5rem;">
+        <h3 style="color:var(--gold-light); font-size:1.15rem; margin-bottom:1.2rem;">Nuevo Video / Edición</h3>
+        
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="galeriaTitulo">Título del Video *</label>
+            <input type="text" id="galeriaTitulo" class="admin-input" required placeholder="Ej. Presentación Silk Top Natural 60cm">
+          </div>
+
+          <div class="form-group">
+            <label for="galeriaOrden">Orden de Exhibición</label>
+            <input type="number" id="galeriaOrden" class="admin-input" min="1" value="1" placeholder="1">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="galeriaDescripcion">Descripción (Opcional)</label>
+            <textarea id="galeriaDescripcion" class="admin-textarea" rows="2" placeholder="Detalles de la fibra, peinado o características del video..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="galeriaVideoFile">Archivo de Video (MP4, WebM) *</label>
+            <input type="file" id="galeriaVideoFile" class="admin-input" accept="video/*" required>
+            <span id="galeriaVideoStatus" style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:0.3rem;"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="galeriaPortadaFile">Portada personalizada (Opcional)</label>
+            <input type="file" id="galeriaPortadaFile" class="admin-input" accept="image/*">
+            <span id="galeriaPortadaStatus" style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:0.3rem;"></span>
+          </div>
+        </div>
+
+        <div class="admin-actions" style="margin-top:1.5rem;">
+          <button type="submit" id="btnGuardarGaleria" class="btn-primary">
+            Guardar video
+          </button>
+          <button type="button" id="btnCancelarGaleria" class="card-action-btn" style="display:none; padding:0.6rem 1.2rem;">
+            Cancelar edición
+          </button>
+        </div>
+
+        <div id="galeriaMsg" class="admin-msg"></div>
+      </form>
+
+      <!-- Listado de Videos de Galería -->
+      <div style="border-top:1px solid var(--border-subtle); padding-top:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h3 style="color:var(--gold-light); font-size:1.15rem; margin:0;">Videos registrados</h3>
+        </div>
+        <div id="listaGaleriaVideos">
+          <p style="color:var(--text-muted); font-size:0.9rem;">Cargando videos...</p>
+        </div>
+      </div>
+    </section>
+
     <!-- Sección Avisar Live (Club Paupelus) -->
-    <section class="admin-card" id="seccionAvisarLive">
+    <section class="admin-card" id="seccionAvisarLive" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
         <div>
           <h2 style="margin-bottom:0.3rem;">Transmisiones en Vivo (Lives)</h2>

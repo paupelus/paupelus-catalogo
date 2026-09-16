@@ -1026,6 +1026,134 @@ async function fetchReels() {
   }
 }
 
+// Memoria local de videos de galería
+let GALERIA_VIDEOS = [];
+
+// Obtener videos activos de la galería desde Supabase
+async function fetchGaleria() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('videos_promocionales')
+      .select('*')
+      .eq('activo', true)
+      .order('orden', { ascending: true, nullsFirst: false });
+
+    if (error) {
+      console.error('Error al consultar videos_promocionales en Supabase:', error);
+      renderGaleria([]);
+      return;
+    }
+
+    GALERIA_VIDEOS = data || [];
+    renderGaleria(GALERIA_VIDEOS);
+  } catch (err) {
+    console.error('Error inesperado al consultar galería:', err);
+    renderGaleria([]);
+  }
+}
+
+// Renderizado de tarjetas de la galería
+function renderGaleria(videos = []) {
+  const container = document.getElementById('galleryGrid');
+  if (!container) return;
+
+  if (!videos || videos.length === 0) {
+    container.innerHTML = `
+      <div class="tutorials-placeholder-card" style="grid-column: 1 / -1; margin: 1rem auto 0;">
+        <div class="tutorials-placeholder-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
+        </div>
+        <h3>Próximamente: Nuevos Videos</h3>
+        <p>Estamos preparando nuevo contenido audiovisual exclusivo de nuestras piezas. ¡Vuelve a visitarnos pronto!</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = videos.map(item => {
+    const portada = item.portada_url || 'logo dorado transparente.png';
+    const titulo = item.titulo || 'Video Exclusivo';
+    const desc = item.descripcion || '';
+
+    return `
+      <article class="gallery-card reveal" onclick="openGalleryModal('${item.id}')" title="Reproducir: ${escapeHtml(titulo)}">
+        <div class="gallery-card-media">
+          <img src="${escapeHtml(portada)}" alt="${escapeHtml(titulo)}" class="gallery-card-cover" loading="lazy" onerror="this.onerror=null; this.src='logo dorado transparente.png';">
+          <div class="gallery-card-overlay">
+            <div class="gallery-card-badge">Paupelus Video</div>
+            <div class="gallery-play-btn" aria-label="Reproducir video">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 4 20 12 6 20 6 4"></polygon>
+              </svg>
+            </div>
+            <div class="gallery-card-info">
+              <h4 class="gallery-card-title">${escapeHtml(titulo)}</h4>
+              ${desc ? `<p class="gallery-card-desc">${escapeHtml(desc)}</p>` : ''}
+            </div>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  initScrollReveal();
+}
+
+// Lightbox Modal para Videos de Galería (object-fit: contain, fondo negro, max-height 80vh)
+function openGalleryModal(videoId) {
+  const videoItem = GALERIA_VIDEOS.find(v => String(v.id) === String(videoId));
+  if (!videoItem || !videoItem.video_url) return;
+
+  const modal = document.getElementById('galleryLightboxModal');
+  const videoEl = document.getElementById('galleryModalVideo');
+  const titleEl = document.getElementById('galleryModalTitle');
+  const descEl = document.getElementById('galleryModalDesc');
+
+  if (!modal || !videoEl) return;
+
+  if (titleEl) titleEl.innerText = videoItem.titulo || 'Video Paupelus';
+  if (descEl) {
+    if (videoItem.descripcion && videoItem.descripcion.trim()) {
+      descEl.innerText = videoItem.descripcion;
+      descEl.style.display = 'block';
+    } else {
+      descEl.innerText = '';
+      descEl.style.display = 'none';
+    }
+  }
+
+  videoEl.src = videoItem.video_url;
+  if (videoItem.portada_url) {
+    videoEl.poster = videoItem.portada_url;
+  }
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  videoEl.play().catch(err => {
+    console.warn('Reproducción de video prevenida por política del navegador:', err);
+  });
+}
+
+function closeGalleryModal() {
+  const modal = document.getElementById('galleryLightboxModal');
+  const videoEl = document.getElementById('galleryModalVideo');
+
+  if (videoEl) {
+    videoEl.pause();
+    videoEl.currentTime = 0;
+    videoEl.src = '';
+  }
+
+  if (modal) {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
 // Eventos y escuchas al cargar el DOM
 document.addEventListener('DOMContentLoaded', async () => {
   const catalogGrid = document.getElementById('catalogGrid');
@@ -1039,6 +1167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await fetchProductos();
   fetchReels();
+  fetchGaleria();
   renderCatalog('all');
   updateCartUI();
 
@@ -1146,6 +1275,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyCatalogFilter('all', '');
   });
 
+  // Click en "GALERÍA" (Nav Desktop): scroll suave a la sección
+  const navGaleria = document.getElementById('navGaleriaLink');
+  navGaleria?.addEventListener('click', (e) => {
+    navPelucasDropdownItem?.classList.remove('open');
+    navPelucasTrigger?.setAttribute('aria-expanded', 'false');
+    const targetSection = document.getElementById('galeria');
+    if (targetSection) {
+      e.preventDefault();
+      targetSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
   // Click en "TUTORIALES" (Nav Desktop): scroll suave a la sección
   const navTutoriales = document.getElementById('navTutorialesLink');
   navTutoriales?.addEventListener('click', (e) => {
@@ -1215,6 +1356,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.target.id === 'lightboxModal') closeProductModal();
   });
 
+  document.getElementById('galleryModalClose')?.addEventListener('click', closeGalleryModal);
+  document.getElementById('galleryLightboxModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'galleryLightboxModal') closeGalleryModal();
+  });
+
   document.getElementById('cartToggleBtn')?.addEventListener('click', openCartDrawer);
   document.getElementById('cartCloseBtn')?.addEventListener('click', closeCartDrawer);
   document.getElementById('cartOverlay')?.addEventListener('click', closeCartDrawer);
@@ -1250,6 +1396,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeProductModal();
+      closeGalleryModal();
       closeCartDrawer();
       closeCheckoutModal();
       closeMobileMenu();
@@ -1334,6 +1481,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Exposición global para callbacks inline de tarjetas y carrito
 window.openProductModal = openProductModal;
+window.openGalleryModal = openGalleryModal;
+window.closeGalleryModal = closeGalleryModal;
 window.addToCart = addToCart;
 window.updateCartQty = updateCartQty;
 

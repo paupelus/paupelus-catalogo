@@ -43,6 +43,11 @@ import {
   inicializarAvisarLive
 } from './avisarLive.js';
 
+import {
+  inicializarGaleriaAdmin,
+  cargarListaGaleria
+} from './galeria.js';
+
 // Elementos del DOM
 const loginForm = document.getElementById('loginForm');
 const btnLogout = document.getElementById('btnLogout');
@@ -50,6 +55,41 @@ const btnProcesarFoto = document.getElementById('btnProcesarFoto');
 const btnGuardarProducto = document.getElementById('btnGuardarProducto');
 const tabActivos = document.getElementById('tabActivos');
 const tabPapelera = document.getElementById('tabPapelera');
+
+// Pestañas principales del panel admin
+const tabNavProductos = document.getElementById('tabNavProductos');
+const tabNavReels = document.getElementById('tabNavReels');
+const tabNavGaleria = document.getElementById('tabNavGaleria');
+const tabNavLives = document.getElementById('tabNavLives');
+
+const panelSeccionProductos = document.getElementById('panelSeccionProductos');
+const seccionReels = document.getElementById('seccionReels');
+const seccionGaleria = document.getElementById('seccionGaleria');
+const seccionAvisarLive = document.getElementById('seccionAvisarLive');
+
+function cambiarPestanaPrincipal(pestana) {
+  const tabs = [
+    { btn: tabNavProductos, el: panelSeccionProductos, id: 'productos' },
+    { btn: tabNavReels, el: seccionReels, id: 'reels' },
+    { btn: tabNavGaleria, el: seccionGaleria, id: 'galeria' },
+    { btn: tabNavLives, el: seccionAvisarLive, id: 'lives' }
+  ];
+
+  tabs.forEach(item => {
+    const isTarget = (item.id === pestana);
+    if (item.btn) item.btn.classList.toggle('active', isTarget);
+    if (item.el) item.el.style.display = isTarget ? 'block' : 'none';
+  });
+
+  if (pestana === 'galeria') {
+    cargarListaGaleria();
+  }
+}
+
+tabNavProductos?.addEventListener('click', () => cambiarPestanaPrincipal('productos'));
+tabNavReels?.addEventListener('click', () => cambiarPestanaPrincipal('reels'));
+tabNavGaleria?.addEventListener('click', () => cambiarPestanaPrincipal('galeria'));
+tabNavLives?.addEventListener('click', () => cambiarPestanaPrincipal('lives'));
 
 // 1. Manejo de Login
 loginForm?.addEventListener('submit', async (e) => {
@@ -67,6 +107,7 @@ loginForm?.addEventListener('submit', async (e) => {
     await purgarProductosAntiguos();
     await cargarListaProductos();
     await cargarReels();
+    await cargarListaGaleria();
   } catch (err) {
     mostrarErrorLogin('Error de conexión con el servicio de autenticación.');
   }
@@ -134,9 +175,10 @@ setCallbackEditar(async (id) => {
   scrollAlFormulario();
 });
 
-// 7. Inicialización de eventos de Reels y Avisar Live
+// 7. Inicialización de eventos de Reels, Avisar Live y Galería
 inicializarEventosReels();
 inicializarAvisarLive();
+inicializarGaleriaAdmin();
 
 // 8. Inicialización al cargar
 (async function init() {
@@ -146,8 +188,10 @@ inicializarAvisarLive();
     await purgarProductosAntiguos();
     await cargarListaProductos();
     await cargarReels();
+    await cargarListaGaleria();
   } else {
     mostrarLogin();
   }
 })();
+
 
