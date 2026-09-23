@@ -177,11 +177,11 @@ export async function guardarOActualizarProducto(fotoProcesadaBlob) {
         fotoStatus.style.color = 'var(--gold-light)';
       }
       try {
-        const photoFileName = `${crypto.randomUUID()}.png`;
+        const photoFileName = `${crypto.randomUUID()}.webp`;
         const { error: photoErr } = await supabaseClient
           .storage
           .from('fotos-pelucas')
-          .upload(photoFileName, fotoProcesadaBlob, { contentType: 'image/png' });
+          .upload(photoFileName, fotoProcesadaBlob, { contentType: 'image/webp' });
 
         if (photoErr) throw photoErr;
 

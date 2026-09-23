@@ -24,30 +24,34 @@ export function setProcessStatus(mensaje) {
 
 export function limpiarCanvas() {
   if (ctx) {
-    ctx.clearRect(0, 0, 1000, 1250);
+    ctx.clearRect(0, 0, 800, 1000);
   }
 }
 
 export function dibujarFotoCover(fotoUrl) {
   if (!ctx || !fotoUrl) return;
+  if (previewCanvas) {
+    previewCanvas.width = 800;
+    previewCanvas.height = 1000;
+  }
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
-    ctx.clearRect(0, 0, 1000, 1250);
-    const canvasAspect = 1000 / 1250;
+    ctx.clearRect(0, 0, 800, 1000);
+    const canvasAspect = 800 / 1000;
     const imgAspect = img.width / img.height;
     let drawW, drawH, drawX, drawY;
 
     if (imgAspect > canvasAspect) {
-      drawH = 1250;
-      drawW = img.width * (1250 / img.height);
-      drawX = (1000 - drawW) / 2;
+      drawH = 1000;
+      drawW = img.width * (1000 / img.height);
+      drawX = (800 - drawW) / 2;
       drawY = 0;
     } else {
-      drawW = 1000;
-      drawH = img.height * (1000 / img.width);
+      drawW = 800;
+      drawH = img.height * (800 / img.width);
       drawX = 0;
-      drawY = (1250 - drawH) / 2;
+      drawY = (1000 - drawH) / 2;
     }
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
   };
@@ -127,27 +131,31 @@ export async function procesarFoto() {
   const cutW = maxX - minX + 1;
   const cutH = maxY - minY + 1;
 
-  // 4. Preparar canvas principal (1000x1250) con fondo blanco
-  ctx.clearRect(0, 0, 1000, 1250);
+  // 4. Preparar canvas principal (800x1000) con fondo blanco
+  if (previewCanvas) {
+    previewCanvas.width = 800;
+    previewCanvas.height = 1000;
+  }
+  ctx.clearRect(0, 0, 800, 1000);
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, 1000, 1250);
+  ctx.fillRect(0, 0, 800, 1000);
 
   // Escalar para ocupar ~85% de la altura del canvas
-  const targetHeight = 1250 * 0.85;
+  const targetHeight = 1000 * 0.85;
   const scale = targetHeight / cutH;
   const destW = cutW * scale;
   const destH = targetHeight;
-  const destX = (1000 - destW) / 2;
-  const destY = (1250 - destH) / 2;
+  const destX = (800 - destW) / 2;
+  const destY = (1000 - destH) / 2;
 
   // 5. Dibujar sombra elíptica borrosa debajo de la base del sujeto
-  const shadowY = destY + destH - 10;
-  const shadowX = 1000 / 2;
-  const shadowRadiusX = Math.min(destW * 0.38, 220);
-  const shadowRadiusY = 22;
+  const shadowY = destY + destH - 8;
+  const shadowX = 800 / 2;
+  const shadowRadiusX = Math.min(destW * 0.38, 176);
+  const shadowRadiusY = 18;
 
   ctx.save();
-  ctx.filter = 'blur(20px)';
+  ctx.filter = 'blur(16px)';
   ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
   ctx.beginPath();
   ctx.ellipse(shadowX, shadowY, shadowRadiusX, shadowRadiusY, 0, 0, Math.PI * 2);
@@ -158,13 +166,13 @@ export async function procesarFoto() {
   ctx.drawImage(offCanvas, minX, minY, cutW, cutH, destX, destY, destW, destH);
   URL.revokeObjectURL(imgUrl);
 
-  // 7. Generar blob PNG del canvas
+  // 7. Generar blob WebP del canvas (800x1000, 0.82)
   await new Promise((resolve) => {
     previewCanvas.toBlob((blob) => {
       fotoProcesadaBlob = blob;
-      setProcessStatus('¡Listo! Foto procesada correctamente.');
+      setProcessStatus('¡Listo! Foto procesada correctamente en WebP.');
       resolve(blob);
-    }, 'image/png');
+    }, 'image/webp', 0.82);
   });
 
   return fotoProcesadaBlob;

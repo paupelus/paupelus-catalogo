@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conversor de Fotos a WebP | Paupelus</title>
+  <link rel="icon" type="image/png" href="../logo dorado transparente.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .tool-container {
+      max-width: 900px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .tool-card {
+      background: var(--bg-surface, #14131b);
+      border: 1px solid var(--border-subtle, rgba(230, 200, 135, 0.15));
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      margin-bottom: 2rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .stat-box {
+      background: rgba(18, 17, 24, 0.85);
+      border: 1px solid var(--border-subtle, rgba(230, 200, 135, 0.12));
+      border-radius: 12px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--gold-light, #f0dfb5);
+      font-family: var(--font-serif, 'Cormorant Garamond', serif);
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted, #a39fae);
+      margin-top: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .progress-bar-wrap {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 50px;
+      height: 12px;
+      overflow: hidden;
+      margin: 1.5rem 0 0.5rem;
+      display: none;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #c5a059, #f3e5c8);
+      transition: width 0.25s ease;
+    }
+    .log-terminal {
+      background: #0a090d;
+      border: 1px solid rgba(230, 200, 135, 0.15);
+      border-radius: 10px;
+      padding: 1.2rem;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #d1ccd8;
+      max-height: 420px;
+      overflow-y: auto;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .log-line {
+      margin-bottom: 0.35rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .log-success {
+      color: #6fcf97;
+    }
+    .log-error {
+      color: #ff8585;
+    }
+    .log-info {
+      color: #e6c887;
+    }
+    .btn-convert {
+      background: linear-gradient(135deg, #c5a059 0%, #a8843c 100%);
+      color: #0c0b0f;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      letter-spacing: 0.04em;
+    }
+    .btn-convert:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
+      background: linear-gradient(135deg, #d6b26b 0%, #b8944c 100%);
+    }
+    .btn-convert:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+<body class="admin-body">
+  <!-- Vista Login si no hay sesión -->
+  <main class="admin-container" id="loginView" style="display:none;">
+    <div class="admin-card" style="max-width: 420px; margin: 5rem auto;">
+      <div style="text-align:center; margin-bottom:1.5rem;">
+        <img src="../logo-dorado.webp" alt="Paupelus" style="height: 75px; width: auto; object-fit: contain;">
+        <h2 style="margin-top: 1rem; font-size: 1.4rem;">Acceso a Herramientas</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">Inicia sesión con tu cuenta de administrador</p>
+      </div>
+      <form id="loginForm" class="form-group" style="gap: 1rem;">
+        <div class="form-group">
+          <label for="loginEmail">Correo Electrónico</label>
+          <input type="email" id="loginEmail" class="admin-input" required placeholder="paula@paupelus.com">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" class="admin-input" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:0.5rem;">
+          Entrar
+        </button>
+        <div id="loginError" class="admin-msg error" style="display:none;"></div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Panel Principal de Conversión -->
+  <main class="tool-container" id="toolView" style="display:none;">
+    <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1.2rem;">
+      <div style="display:flex; align-items:center; gap: 1rem;">
+        <img src="../logo-dorado.webp" alt="Paupelus" style="height: 50px; width: auto; object-fit: contain;">
+        <div>
+          <h1 style="font-family:var(--font-serif); font-size:1.6rem; color:var(--gold-primary); margin:0;">Conversor de Fotos a WebP</h1>
+          <span style="font-size:0.8rem; color:var(--text-muted);">Herramienta interna de optimización de catálogo</span>
+        </div>
+      </div>
+      <button id="btnLogout" class="card-action-btn" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+        Cerrar sesión
+      </button>
+    </header>
+
+    <div class="tool-card">
+      <h2 style="font-size: 1.25rem; font-weight: 500; color: #fff; margin-bottom: 0.6rem;">Estado del Catálogo</h2>
+      <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;">
+        Esta herramienta detecta todas las fotos de productos almacenadas en formato PNG, JPG o JPEG (activos, agotados y en papelera), las descarga, redimensiona a máximo 800×1000 px con fondo blanco y las convierte a WebP (calidad 82). Los archivos originales se conservan en el bucket como respaldo.
+      </p>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-number" id="statTotalProds">-</div>
+          <div class="stat-label">Total Productos</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statPendingProds" style="color:#f2994a;">-</div>
+          <div class="stat-label">Pendientes (PNG/JPG)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statWebpProds" style="color:#6fcf97;">-</div>
+          <div class="stat-label">Optimizados (WebP)</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap: 1rem; align-items:center; margin-top: 1.5rem;">
+        <button id="btnIniciarConversion" class="btn-convert">
+          <span>🚀 Convertir fotos a WebP</span>
+        </button>
+        <button id="btnRecargarLista" class="card-action-btn" style="padding: 0.85rem 1.4rem;">
+          🔄 Actualizar datos
+        </button>
+      </div>
+
+      <div id="progressWrap" class="progress-bar-wrap">
+        <div id="progressBar" class="progress-bar-fill"></div>
+      </div>
+      <div id="progressText" style="font-size: 0.85rem; color: var(--gold-light); margin-top: 0.4rem; display:none;"></div>
+    </div>
+
+    <div class="tool-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.1rem; margin:0; font-weight: 500;">Registro de Progreso</h3>
+        <span id="logCounter" style="font-size: 0.8rem; color: var(--text-muted);">Listo para iniciar</span>
+      </div>
+      <div id="logTerminal" class="log-terminal">Presiona "Convertir fotos a WebP" para comenzar el análisis y conversión...</div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script type="module" src="convertir-fotos.js"></script>
+</body>
+</html>
