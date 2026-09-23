@@ -52,6 +52,7 @@
       <button type="button" class="filter-btn active" id="tabNavProductos">Catálogo</button>
       <button type="button" class="filter-btn" id="tabNavReels">Reels ("En Acción")</button>
       <button type="button" class="filter-btn" id="tabNavGaleria">Galería</button>
+      <button type="button" class="filter-btn" id="tabNavTutoriales">Tutoriales</button>
       <button type="button" class="filter-btn" id="tabNavLives">Avisar Live</button>
     </div>
 
@@ -396,6 +397,89 @@
         </div>
         <div id="listaGaleriaVideos">
           <p style="color:var(--text-muted); font-size:0.9rem;">Cargando videos...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gestión de Tutoriales -->
+    <section class="admin-card" id="seccionTutoriales" style="display:none;">
+      <h2>Gestión de Tutoriales</h2>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-top:-1rem; margin-bottom:1.5rem;">
+        Gestiona los tutoriales de peinado, colocación y cuidados. Los videos y portadas se alojan en el bucket <code>videos-tutoriales</code>.
+      </p>
+
+      <!-- Formulario de Tutorial -->
+      <form id="tutorialForm" style="margin-bottom:2.5rem; background:#0d0c12; border:1px solid var(--border-subtle); border-radius:12px; padding:1.5rem;">
+        <h3 id="tutorialFormTitle" style="color:var(--gold-light); font-size:1.15rem; margin-bottom:1.2rem;">Nuevo Tutorial</h3>
+
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="tutorialTitulo">Título del Tutorial *</label>
+            <input type="text" id="tutorialTitulo" class="admin-input" required placeholder="Ej. Cómo colocar tu Peluca Lace Front paso a paso">
+          </div>
+
+          <div class="form-group">
+            <label for="tutorialTipo">Tipo de Video *</label>
+            <select id="tutorialTipo" class="admin-select" required>
+              <option value="link">Link (YouTube/TikTok/Instagram)</option>
+              <option value="archivo">Subir archivo de video</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="tutorialLinkGroup">
+            <label for="tutorialLinkExterno">URL del Video (YouTube, TikTok, IG) *</label>
+            <input type="url" id="tutorialLinkExterno" class="admin-input" placeholder="https://www.youtube.com/watch?v=...">
+          </div>
+
+          <div class="form-group" id="tutorialArchivoGroup" style="display:none;">
+            <label for="tutorialVideoFile">Archivo de Video (MP4, WebM) *</label>
+            <input type="file" id="tutorialVideoFile" class="admin-input" accept="video/*">
+            <span id="tutorialVideoStatus" style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:0.3rem;"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="tutorialPortadaFile">Portada (Opcional - se convertirá a WebP)</label>
+            <input type="file" id="tutorialPortadaFile" class="admin-input" accept="image/*">
+            <span id="tutorialPortadaStatus" style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:0.3rem;"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="tutorialOrden">Orden de Exhibición</label>
+            <input type="number" id="tutorialOrden" class="admin-input" min="1" value="1" placeholder="1">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="tutorialDescripcion">Descripción (Opcional)</label>
+            <textarea id="tutorialDescripcion" class="admin-textarea" rows="2" placeholder="Detalles, consejos o pasos clave explicados en el video..."></textarea>
+          </div>
+
+          <div class="form-group full-width" style="display:flex; align-items:center; gap:0.6rem; margin-top:0.2rem;">
+            <label style="display:flex; align-items:center; gap:0.6rem; cursor:pointer; font-size:0.9rem; color:var(--text-main);">
+              <input type="checkbox" id="tutorialActivo" checked style="width:18px; height:18px; accent-color:var(--gold-primary);">
+              Tutorial activo (visible en el sitio)
+            </label>
+          </div>
+        </div>
+
+        <div class="admin-actions" style="margin-top:1.5rem;">
+          <button type="submit" id="btnGuardarTutorial" class="btn-primary">
+            Guardar tutorial
+          </button>
+          <button type="button" id="btnCancelarTutorial" class="card-action-btn" style="display:none; padding:0.6rem 1.2rem;">
+            Cancelar edición
+          </button>
+        </div>
+
+        <div id="tutorialMsg" class="admin-msg" style="margin-top:1rem;"></div>
+      </form>
+
+      <!-- Listado de Tutoriales -->
+      <div style="border-top:1px solid var(--border-subtle); padding-top:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h3 style="color:var(--gold-light); font-size:1.15rem; margin:0;">Tutoriales registrados</h3>
+        </div>
+        <div id="listaTutoriales">
+          <p style="color:var(--text-muted); font-size:0.9rem;">Cargando tutoriales...</p>
         </div>
       </div>
     </section>

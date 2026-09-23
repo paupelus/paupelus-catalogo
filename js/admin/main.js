@@ -48,6 +48,11 @@ import {
   cargarListaGaleria
 } from './galeria.js';
 
+import {
+  inicializarTutorialesAdmin,
+  cargarListaTutoriales
+} from './tutoriales.js';
+
 // Elementos del DOM
 const loginForm = document.getElementById('loginForm');
 const btnLogout = document.getElementById('btnLogout');
@@ -60,11 +65,13 @@ const tabPapelera = document.getElementById('tabPapelera');
 const tabNavProductos = document.getElementById('tabNavProductos');
 const tabNavReels = document.getElementById('tabNavReels');
 const tabNavGaleria = document.getElementById('tabNavGaleria');
+const tabNavTutoriales = document.getElementById('tabNavTutoriales');
 const tabNavLives = document.getElementById('tabNavLives');
 
 const panelSeccionProductos = document.getElementById('panelSeccionProductos');
 const seccionReels = document.getElementById('seccionReels');
 const seccionGaleria = document.getElementById('seccionGaleria');
+const seccionTutoriales = document.getElementById('seccionTutoriales');
 const seccionAvisarLive = document.getElementById('seccionAvisarLive');
 
 function cambiarPestanaPrincipal(pestana) {
@@ -72,6 +79,7 @@ function cambiarPestanaPrincipal(pestana) {
     { btn: tabNavProductos, el: panelSeccionProductos, id: 'productos' },
     { btn: tabNavReels, el: seccionReels, id: 'reels' },
     { btn: tabNavGaleria, el: seccionGaleria, id: 'galeria' },
+    { btn: tabNavTutoriales, el: seccionTutoriales, id: 'tutoriales' },
     { btn: tabNavLives, el: seccionAvisarLive, id: 'lives' }
   ];
 
@@ -83,12 +91,15 @@ function cambiarPestanaPrincipal(pestana) {
 
   if (pestana === 'galeria') {
     cargarListaGaleria();
+  } else if (pestana === 'tutoriales') {
+    cargarListaTutoriales();
   }
 }
 
 tabNavProductos?.addEventListener('click', () => cambiarPestanaPrincipal('productos'));
 tabNavReels?.addEventListener('click', () => cambiarPestanaPrincipal('reels'));
 tabNavGaleria?.addEventListener('click', () => cambiarPestanaPrincipal('galeria'));
+tabNavTutoriales?.addEventListener('click', () => cambiarPestanaPrincipal('tutoriales'));
 tabNavLives?.addEventListener('click', () => cambiarPestanaPrincipal('lives'));
 
 // 1. Manejo de Login
@@ -108,6 +119,7 @@ loginForm?.addEventListener('submit', async (e) => {
     await cargarListaProductos();
     await cargarReels();
     await cargarListaGaleria();
+    await cargarListaTutoriales();
   } catch (err) {
     mostrarErrorLogin('Error de conexión con el servicio de autenticación.');
   }
@@ -175,10 +187,11 @@ setCallbackEditar(async (id) => {
   scrollAlFormulario();
 });
 
-// 7. Inicialización de eventos de Reels, Avisar Live y Galería
+// 7. Inicialización de eventos de Reels, Avisar Live, Galería y Tutoriales
 inicializarEventosReels();
 inicializarAvisarLive();
 inicializarGaleriaAdmin();
+inicializarTutorialesAdmin();
 
 // 8. Inicialización al cargar
 (async function init() {
@@ -189,6 +202,7 @@ inicializarGaleriaAdmin();
     await cargarListaProductos();
     await cargarReels();
     await cargarListaGaleria();
+    await cargarListaTutoriales();
   } else {
     mostrarLogin();
   }
