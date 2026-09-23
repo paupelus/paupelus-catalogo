@@ -103,6 +103,8 @@ function renderCatalog(filter = 'all', searchQuery = '', subcategoria = '') {
     return;
   }
 
+  const isTouchDevice = window.matchMedia('(hover: none)').matches;
+
   container.innerHTML = filtered.map(item => {
     let categoryLabel = 'Accesorio Especializado';
     if (item.category === 'pelucas') {
@@ -115,12 +117,16 @@ function renderCatalog(filter = 'all', searchQuery = '', subcategoria = '') {
       }
     }
 
+    const secondaryImgHtml = isTouchDevice
+      ? ''
+      : `<img class="card-img-secondary" src="${item.secondaryImg}" alt="${item.name} detalle" loading="lazy" onerror="this.onerror=null; this.src='logo dorado transparente.png'">`;
+
     return `
     <article class="product-card reveal" data-category="${item.category}" data-id="${item.id}">
       <div class="card-media-wrap" onclick="openProductModal('${item.id}')">
         <span class="card-badge">${item.tag}</span>
-        <img class="card-img-primary" src="${item.primaryImg}" alt="${item.name}" loading="lazy" onerror="this.onerror=null; this.src='logo dorado transparente.png'">
-        <img class="card-img-secondary" src="${item.secondaryImg}" alt="${item.name} detalle" loading="lazy" onerror="this.onerror=null; this.src='logo dorado transparente.png'">
+        <img class="card-img-primary" src="${item.primaryImg}" alt="${item.name}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='logo dorado transparente.png'">
+        ${secondaryImgHtml}
         
         <div class="card-quick-actions" onclick="event.stopPropagation()">
           <button class="card-action-btn" onclick="openProductModal('${item.id}')">
@@ -1156,6 +1162,7 @@ function closeGalleryModal() {
 
 // Eventos y escuchas al cargar el DOM
 document.addEventListener('DOMContentLoaded', async () => {
+  document.body.style.overflow = '';
   const catalogGrid = document.getElementById('catalogGrid');
   if (catalogGrid) {
     catalogGrid.innerHTML = `
