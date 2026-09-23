@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="css/modal.css">
   <link rel="stylesheet" href="css/checkout.css">
   <link rel="stylesheet" href="css/social.css">
+  <link rel="stylesheet" href="css/tutoriales.css">
   <link rel="stylesheet" href="css/footer.css">
   <link rel="icon" type="image/png" href="logo dorado transparente.png">
 </head>
@@ -217,7 +218,8 @@
         </p>
       </div>
 
-      <div class="tutorials-placeholder-card">
+      <!-- Tarjeta informativa Próximamente (se oculta cuando hay tutoriales disponibles) -->
+      <div class="tutorials-placeholder-card" id="tutorialsPlaceholder">
         <div class="tutorials-placeholder-icon">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <polygon points="23 7 16 12 23 17 23 7"></polygon>
@@ -231,6 +233,16 @@
             Solicitar Asesoría de Postura por WhatsApp
           </a>
         </div>
+      </div>
+
+      <!-- Grid dinámico de tutoriales -->
+      <div class="tutorials-grid" id="tutorialsGrid" style="display: none;"></div>
+
+      <!-- Botón de Asesoría de Postura por WhatsApp (se muestra debajo del grid cuando hay tutoriales) -->
+      <div class="tutorials-cta-wrap" id="tutorialsCtaWrap" style="display: none; text-align: center; margin-top: 3.5rem;">
+        <a href="https://wa.me/573185182292?text=Hola%20Paupelus%2C%20quisiera%20recibir%20asesor%C3%ADa%20y%20gu%C3%ADas%20de%20postura" target="_blank" rel="noopener noreferrer" class="btn-outline" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; padding: 0.85rem 1.8rem;">
+          Solicitar Asesoría de Postura por WhatsApp
+        </a>
       </div>
     </div>
   </section>
@@ -424,6 +436,24 @@
       <div class="gallery-caption-box" id="galleryCaptionBox">
         <h3 id="galleryModalTitle" class="gallery-modal-title"></h3>
         <p id="galleryModalDesc" class="gallery-modal-desc"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Reproductor de Tutoriales (object-fit: contain, fondo negro, max-height 80vh) -->
+  <div class="tutorial-modal lightbox-modal" id="tutorialModal" aria-modal="true" role="dialog">
+    <div class="tutorial-modal-content">
+      <button type="button" class="lightbox-close-btn tutorial-close-btn" id="tutorialModalClose" aria-label="Cerrar tutorial">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div class="tutorial-player-container" id="tutorialPlayerContainer">
+        <!-- Inyección dinámica: video o iframe -->
+      </div>
+
+      <div class="tutorial-caption-box" id="tutorialCaptionBox">
+        <h3 id="tutorialModalTitle" class="tutorial-modal-title"></h3>
+        <p id="tutorialModalDesc" class="tutorial-modal-desc"></p>
       </div>
     </div>
   </div>

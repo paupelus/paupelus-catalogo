@@ -1160,6 +1160,255 @@ function closeGalleryModal() {
   }
 }
 
+// ==========================================================================
+// Módulo de Tutoriales Paupelus (Público)
+// ==========================================================================
+let TUTORIALES_LIST = [];
+
+// Helper para extraer ID de video de YouTube (watch, youtu.be, shorts, embed)
+function getYouTubeId(url) {
+  if (!url) return null;
+  const str = String(url).trim();
+  const shortsMatch = str.match(/(?:youtube\.com|youtu\.be)\/shorts\/([a-zA-Z0-9_-]+)/i);
+  if (shortsMatch) return shortsMatch[1];
+  const beMatch = str.match(/youtu\.be\/([a-zA-Z0-9_-]+)/i);
+  if (beMatch) return beMatch[1];
+  const watchMatch = str.match(/[?&]v=([a-zA-Z0-9_-]+)/i);
+  if (watchMatch) return watchMatch[1];
+  const embedMatch = str.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]+)/i);
+  if (embedMatch) return embedMatch[1];
+  return null;
+}
+
+// Helper para extraer ID de TikTok (/video/ID o /v/ID)
+function getTikTokId(url) {
+  if (!url) return null;
+  const str = String(url).trim();
+  const match = str.match(/\/video\/(\d+)/i) || str.match(/\/v\/(\d+)/i);
+  return match ? match[1] : null;
+}
+
+// Carga de tutoriales desde Supabase (orden ASC, luego created_at ASC)
+async function fetchTutoriales() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('tutoriales')
+      .select('*')
+      .order('orden', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error al cargar tutoriales desde Supabase:', error);
+      renderTutoriales([]);
+      return;
+    }
+
+    TUTORIALES_LIST = data || [];
+    renderTutoriales(TUTORIALES_LIST);
+  } catch (err) {
+    console.error('Error inesperado al consultar tutoriales:', err);
+    renderTutoriales([]);
+  }
+}
+
+// Renderizado de la sección de tutoriales
+function renderTutoriales(tutoriales = []) {
+  const placeholder = document.getElementById('tutorialsPlaceholder');
+  const grid = document.getElementById('tutorialsGrid');
+  const ctaWrap = document.getElementById('tutorialsCtaWrap');
+
+  if (!grid) return;
+
+  // Si no hay ninguno, dejar la tarjeta informativa actual tal como está
+  if (!tutoriales || tutoriales.length === 0) {
+    if (placeholder) placeholder.style.display = 'block';
+    grid.style.display = 'none';
+    grid.innerHTML = '';
+    if (ctaWrap) ctaWrap.style.display = 'none';
+    return;
+  }
+
+  // Si hay tutoriales: ocultar la tarjeta placeholder y mostrar grid + botón CTA debajo
+  if (placeholder) placeholder.style.display = 'none';
+  grid.style.display = 'grid';
+  if (ctaWrap) ctaWrap.style.display = 'block';
+
+  grid.innerHTML = tutoriales.map(item => {
+    const portada = (item.portada_url || '').trim();
+    const titulo = item.titulo || 'Tutorial Paupelus';
+    const desc = item.descripcion || '';
+
+    // Etiqueta de plataforma / tipo
+    let badgeText = 'Tutorial';
+    if (item.tipo === 'archivo') {
+      badgeText = 'Paupelus Video';
+    } else if (item.tipo === 'link') {
+      const link = (item.link_externo || '').toLowerCase();
+      if (link.includes('youtube.com') || link.includes('youtu.be')) {
+        badgeText = 'YouTube';
+      } else if (link.includes('tiktok.com')) {
+        badgeText = 'TikTok';
+      } else if (link.includes('instagram.com')) {
+        badgeText = 'Instagram';
+      } else {
+        badgeText = 'Enlace VIP';
+      }
+    }
+
+    const portadaHtml = portada
+      ? `<img src="${escapeHtml(portada)}" alt="${escapeHtml(titulo)}" class="tutorial-card-cover" loading="lazy" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+         <div class="tutorial-card-placeholder" style="display:none;">
+           <img src="logo-dorado.webp" alt="Paupelus" onerror="this.onerror=null; this.src='logo dorado transparente.png';">
+         </div>`
+      : `<div class="tutorial-card-placeholder">
+           <img src="logo-dorado.webp" alt="Paupelus" onerror="this.onerror=null; this.src='logo dorado transparente.png';">
+         </div>`;
+
+    return `
+      <article class="tutorial-card reveal" onclick="handleTutorialClick('${item.id}')" role="button" tabindex="0" title="${escapeHtml(titulo)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleTutorialClick('${item.id}');}">
+        <div class="tutorial-card-media">
+          ${portadaHtml}
+          <div class="tutorial-card-overlay">
+            <div class="tutorial-card-badge">${badgeText}</div>
+            <div class="tutorial-play-btn" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 4 20 12 6 20 6 4"></polygon>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="tutorial-card-content">
+          <h4 class="tutorial-card-title">${escapeHtml(titulo)}</h4>
+          ${desc ? `<p class="tutorial-card-desc">${escapeHtml(desc)}</p>` : ''}
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  initScrollReveal();
+}
+
+// Manejador del click o toque en una tarjeta de tutorial
+function handleTutorialClick(tutorialId) {
+  const item = TUTORIALES_LIST.find(t => String(t.id) === String(tutorialId));
+  if (!item) return;
+
+  if (item.tipo === 'link') {
+    const rawUrl = (item.link_externo || '').trim();
+    if (!rawUrl) return;
+
+    const ytId = getYouTubeId(rawUrl);
+    const ttId = getTikTokId(rawUrl);
+
+    if (ytId) {
+      openTutorialModal(item, { type: 'youtube', id: ytId });
+      return;
+    }
+
+    if (ttId) {
+      openTutorialModal(item, { type: 'tiktok', id: ttId });
+      return;
+    }
+
+    // Instagram u otro link: no se embebe; abrir el link en una pestaña nueva directamente
+    window.open(rawUrl, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  // tipo 'archivo'
+  if (item.tipo === 'archivo' && item.video_url) {
+    openTutorialModal(item, { type: 'archivo', url: item.video_url });
+  }
+}
+
+// Apertura del modal reproductor de tutoriales
+function openTutorialModal(item, mediaSource) {
+  const modal = document.getElementById('tutorialModal');
+  const container = document.getElementById('tutorialPlayerContainer');
+  const titleEl = document.getElementById('tutorialModalTitle');
+  const descEl = document.getElementById('tutorialModalDesc');
+
+  if (!modal || !container) return;
+
+  if (titleEl) titleEl.innerText = item.titulo || 'Tutorial Paupelus';
+  if (descEl) {
+    if (item.descripcion && item.descripcion.trim()) {
+      descEl.innerText = item.descripcion;
+      descEl.style.display = 'block';
+    } else {
+      descEl.innerText = '';
+      descEl.style.display = 'none';
+    }
+  }
+
+  // Limpiar reproductor previo
+  container.innerHTML = '';
+
+  if (mediaSource.type === 'archivo') {
+    const video = document.createElement('video');
+    video.className = 'tutorial-video-player';
+    video.controls = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.preload = 'metadata';
+    if (item.portada_url) {
+      video.poster = item.portada_url;
+    }
+    video.src = mediaSource.url;
+    container.appendChild(video);
+
+    video.play().catch(err => {
+      console.warn('Reproducción de video prevenida por el navegador:', err);
+    });
+  } else if (mediaSource.type === 'youtube') {
+    const iframe = document.createElement('iframe');
+    iframe.className = 'tutorial-iframe-player youtube';
+    iframe.src = `https://www.youtube.com/embed/${mediaSource.id}?autoplay=1&rel=0`;
+    iframe.title = item.titulo || 'Tutorial YouTube';
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+    iframe.setAttribute('allowfullscreen', 'true');
+    container.appendChild(iframe);
+  } else if (mediaSource.type === 'tiktok') {
+    const iframe = document.createElement('iframe');
+    iframe.className = 'tutorial-iframe-player tiktok';
+    iframe.src = `https://www.tiktok.com/player/v1/${mediaSource.id}?autoplay=1`;
+    iframe.title = item.titulo || 'Tutorial TikTok';
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture');
+    iframe.setAttribute('allowfullscreen', 'true');
+    container.appendChild(iframe);
+  }
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+// Cierre del modal y detención inmediata del video
+function closeTutorialModal() {
+  const modal = document.getElementById('tutorialModal');
+  const container = document.getElementById('tutorialPlayerContainer');
+
+  if (container) {
+    const video = container.querySelector('video');
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+      video.src = '';
+    }
+    const iframe = container.querySelector('iframe');
+    if (iframe) {
+      iframe.src = '';
+    }
+    container.innerHTML = '';
+  }
+
+  if (modal) {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
 // Eventos y escuchas al cargar el DOM
 document.addEventListener('DOMContentLoaded', async () => {
   document.body.style.overflow = '';
@@ -1175,6 +1424,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await fetchProductos();
   fetchReels();
   fetchGaleria();
+  fetchTutoriales();
   renderCatalog('all');
   updateCartUI();
 
@@ -1368,6 +1618,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.target.id === 'galleryLightboxModal') closeGalleryModal();
   });
 
+  document.getElementById('tutorialModalClose')?.addEventListener('click', closeTutorialModal);
+  document.getElementById('tutorialModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'tutorialModal') closeTutorialModal();
+  });
+
   document.getElementById('cartToggleBtn')?.addEventListener('click', openCartDrawer);
   document.getElementById('cartCloseBtn')?.addEventListener('click', closeCartDrawer);
   document.getElementById('cartOverlay')?.addEventListener('click', closeCartDrawer);
@@ -1404,6 +1659,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape') {
       closeProductModal();
       closeGalleryModal();
+      closeTutorialModal();
       closeCartDrawer();
       closeCheckoutModal();
       closeMobileMenu();
@@ -1490,6 +1746,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 window.openProductModal = openProductModal;
 window.openGalleryModal = openGalleryModal;
 window.closeGalleryModal = closeGalleryModal;
+window.handleTutorialClick = handleTutorialClick;
+window.openTutorialModal = openTutorialModal;
+window.closeTutorialModal = closeTutorialModal;
 window.addToCart = addToCart;
 window.updateCartQty = updateCartQty;
 
