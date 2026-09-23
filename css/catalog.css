@@ -113,12 +113,7 @@
   transition: all 0.4s var(--transition-smooth);
   display: flex;
   flex-direction: column;
-}
-
-.product-card:hover {
-  transform: translateY(-8px);
-  border-color: var(--border-active);
-  box-shadow: var(--shadow-luxury);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .card-media-wrap {
@@ -128,6 +123,7 @@
   background: #181622;
   overflow: hidden;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .card-img-primary,
@@ -143,22 +139,6 @@
 
 .card-img-secondary {
   opacity: 0;
-}
-
-.product-card:hover .card-img-primary {
-  opacity: 0;
-  transform: scale(1.05);
-}
-
-.product-card:hover .card-img-secondary {
-  opacity: 1;
-  transform: scale(1.05);
-}
-
-/* When only one photo is available */
-.product-card.single-img:hover .card-img-primary {
-  opacity: 1;
-  transform: scale(1.06);
 }
 
 .card-badge {
@@ -188,11 +168,7 @@
   transform: translateY(12px);
   transition: all 0.35s var(--transition-smooth);
   z-index: 5;
-}
-
-.product-card:hover .card-quick-actions {
-  opacity: 1;
-  transform: translateY(0);
+  pointer-events: none;
 }
 
 .card-action-btn {
@@ -213,12 +189,79 @@
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.card-action-btn:hover {
-  background: var(--gold-gradient);
-  color: #0c0b0f;
-  border-color: transparent;
+/* Efectos Hover de Tarjeta (Exclusivo Escritorio con Ratón) */
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--border-active);
+    box-shadow: var(--shadow-luxury);
+  }
+
+  .product-card:hover .card-img-primary {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+
+  .product-card:hover .card-img-secondary {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  /* When only one photo is available */
+  .product-card.single-img:hover .card-img-primary {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+
+  .product-card:hover .card-quick-actions {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .card-action-btn:hover {
+    background: var(--gold-gradient);
+    color: #0c0b0f;
+    border-color: transparent;
+  }
+
+  .card-btn-add:hover {
+    background: var(--gold-gradient);
+    color: #0c0b0f;
+    transform: scale(1.1);
+  }
+}
+
+/* Dispositivos Táctiles / Móviles (Sin Hover) */
+@media (hover: none) {
+  .product-card,
+  .product-card:hover {
+    transform: none !important;
+  }
+
+  .card-img-primary,
+  .product-card:hover .card-img-primary {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .card-img-secondary,
+  .product-card:hover .card-img-secondary {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  .card-quick-actions,
+  .product-card:hover .card-quick-actions {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+  }
 }
 
 .card-details {
@@ -287,12 +330,6 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-}
-
-.card-btn-add:hover {
-  background: var(--gold-gradient);
-  color: #0c0b0f;
-  transform: scale(1.1);
 }
 
 /* Pagination / Load More */
