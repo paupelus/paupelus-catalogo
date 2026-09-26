@@ -1,0 +1,14 @@
+# robots.txt — Paupelus Beauty
+# https://paupelus-catalogo.pages.dev/
+
+User-agent: *
+Allow: /
+
+# Archivos administrativos — no indexar
+Disallow: /admin.html
+Disallow: /admin.js
+Disallow: /js/admin/
+Disallow: /herramientas/
+
+# Sitemap
+Sitemap: https://paupelus-catalogo.pages.dev/sitemap.xml
