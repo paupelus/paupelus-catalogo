@@ -96,7 +96,35 @@
   transform: scale(1.05);
 }
 
+/* Cobertura local SEO */
+.footer-coverage {
+  max-width: 1440px;
+  margin: 0 auto 2rem auto;
+  padding: 1.2rem 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.coverage-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-primary);
+  margin-bottom: 0.5rem;
+}
+
+.coverage-text {
+  color: #4a4755;
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+
+.coverage-text strong {
+  color: #6a6777;
+}
+
 .footer-bottom {
+
   max-width: 1440px;
   margin: 0 auto;
   padding-top: 2rem;
