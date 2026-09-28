@@ -1,54 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
-
-  <!-- Página principal -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://paupelus-catalogo.pages.dev/</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-09-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="es-CO" href="https://paupelus-catalogo.pages.dev/"/>
   </url>
-
-  <!-- Sección Catálogo -->
-  <url>
-    <loc>https://paupelus-catalogo.pages.dev/#catalogo</loc>
-    <lastmod>2026-09-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Sección Pelucas Clásicas -->
-  <url>
-    <loc>https://paupelus-catalogo.pages.dev/#catalogo</loc>
-    <lastmod>2026-09-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Sección Galería -->
-  <url>
-    <loc>https://paupelus-catalogo.pages.dev/#galeria</loc>
-    <lastmod>2026-09-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Sección Tutoriales -->
-  <url>
-    <loc>https://paupelus-catalogo.pages.dev/#tutoriales</loc>
-    <lastmod>2026-09-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Sección Lives & Feed -->
-  <url>
-    <loc>https://paupelus-catalogo.pages.dev/#lives</loc>
-    <lastmod>2026-09-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-
 </urlset>
