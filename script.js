@@ -762,7 +762,6 @@ function openProductModal(productId, defaultTab = 'foto') {
   const descEl = document.getElementById('lightboxDesc');
   const specsEl = document.getElementById('lightboxSpecs');
   const addBtn = document.getElementById('lightboxAddBtn');
-  const waBtn = document.getElementById('lightboxWhatsAppBtn');
 
   if (!modal) return;
 
@@ -876,13 +875,6 @@ function openProductModal(productId, defaultTab = 'foto') {
     activarTab('video');
   } else {
     activarTab('foto');
-  }
-
-  // Configurar enlace directo a WhatsApp para compra rápida
-  if (waBtn) {
-    const waPhone = '573185182292';
-    const waText = `¡Hola Paupelus! 💖 Me encantó la ${item.name} (${formatPrice(item.price)}). Quiero consultar disponibilidad y coordinar el envío.`;
-    waBtn.href = `https://wa.me/${waPhone}?text=${encodeURIComponent(waText)}`;
   }
 
   specsEl.innerHTML = item.specs.map(s => `<span class="spec-pill">${s}</span>`).join('');
