@@ -13,6 +13,9 @@
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.35s ease, visibility 0.35s;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .lightbox-modal.open {
@@ -217,37 +220,57 @@
   position: absolute;
   top: 1.2rem;
   right: 1.2rem;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-main);
-  width: 38px;
+  background: rgba(230, 200, 135, 0.12);
+  border: 1px solid rgba(230, 200, 135, 0.4);
+  color: var(--gold-light, #f5e4b8);
   height: 38px;
-  border-radius: 50%;
+  padding: 0 0.85rem;
+  border-radius: 20px;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 10;
   transition: all 0.2s ease;
 }
 
 .lightbox-close-btn:hover {
   background: var(--gold-primary);
   color: #0c0b0f;
+  border-color: var(--gold-primary);
 }
 
 /* Responsive Rules (Modal) */
 @media (max-width: 1024px) {
+  .lightbox-modal {
+    padding: 1rem 0.5rem;
+    align-items: flex-start;
+  }
+
   .lightbox-content {
     grid-template-columns: 1fr;
-    max-height: 95vh;
-    overflow-y: auto;
-    padding: 1.5rem;
-    gap: 1.5rem;
+    max-height: none;
+    overflow: visible;
+    padding: 1.25rem 1rem 2rem 1rem;
+    margin: 1rem auto 2.5rem auto;
+    gap: 1.25rem;
   }
 
   .lightbox-media-viewer {
-    min-height: 360px;
-    max-height: 420px;
+    min-height: 300px;
+    max-height: 400px;
+  }
+
+  .lightbox-close-btn {
+    top: 0.75rem;
+    right: 0.75rem;
+    height: 36px;
+    padding: 0 0.75rem;
+    font-size: 0.8rem;
   }
 }
 
@@ -276,4 +299,32 @@
   color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(37, 211, 102, 0.35);
+}
+
+/* Botón Explorar Más Pelucas en Modal */
+.btn-explorar-catalogo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-sm, 8px);
+  background: rgba(230, 200, 135, 0.08);
+  border: 1.5px solid rgba(230, 200, 135, 0.45);
+  color: var(--gold-light, #f5e4b8);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.btn-explorar-catalogo:hover {
+  background: rgba(230, 200, 135, 0.22);
+  border-color: var(--gold-primary);
+  color: #ffffff;
+  transform: translateY(-2px);
 }

@@ -889,14 +889,14 @@ function openProductModal(productId, defaultTab = 'foto') {
 
   addBtn.onclick = () => {
     addToCart(item.id);
-    closeProductModal();
+    closeProductModal(true);
   };
 
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
-function closeProductModal() {
+function closeProductModal(scrollToCatalog = false) {
   const modal = document.getElementById('lightboxModal');
   const tabFotoBtn = document.getElementById('tabFotoBtn');
   const tabVideoBtn = document.getElementById('tabVideoBtn');
@@ -929,6 +929,30 @@ function closeProductModal() {
   if (modal) {
     modal.classList.remove('open');
     document.body.style.overflow = '';
+  }
+
+  // Limpiar el parámetro de producto en la barra de direcciones para navegación limpia
+  try {
+    const currentUrl = new URL(window.location.href);
+    if (currentUrl.searchParams.has('producto') || currentUrl.searchParams.has('peluca')) {
+      currentUrl.searchParams.delete('producto');
+      currentUrl.searchParams.delete('peluca');
+      const cleanSearch = currentUrl.searchParams.toString();
+      const newUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '') + (currentUrl.hash || '#catalogo');
+      window.history.replaceState({}, '', newUrl);
+    }
+  } catch (err) {
+    console.warn('Error al limpiar URL:', err);
+  }
+
+  // Desplazar suavemente a la grilla de productos para que la clienta continúe explorando
+  if (scrollToCatalog) {
+    setTimeout(() => {
+      const catalogoSection = document.getElementById('catalogo');
+      if (catalogoSection) {
+        catalogoSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 120);
   }
 }
 
@@ -1621,9 +1645,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  document.getElementById('lightboxClose')?.addEventListener('click', closeProductModal);
+  document.getElementById('lightboxClose')?.addEventListener('click', () => closeProductModal(true));
+  document.getElementById('btnExplorarCatalogo')?.addEventListener('click', () => closeProductModal(true));
   document.getElementById('lightboxModal')?.addEventListener('click', (e) => {
-    if (e.target.id === 'lightboxModal') closeProductModal();
+    if (e.target.id === 'lightboxModal') closeProductModal(true);
   });
 
   document.getElementById('galleryModalClose')?.addEventListener('click', closeGalleryModal);
