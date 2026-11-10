@@ -250,3 +250,30 @@
     max-height: 420px;
   }
 }
+
+/* Botón Pedir por WhatsApp en Modal */
+.btn-whatsapp-direct {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-sm, 8px);
+  background: #25d366;
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+  cursor: pointer;
+}
+
+.btn-whatsapp-direct:hover {
+  background: #20ba5a;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.35);
+}

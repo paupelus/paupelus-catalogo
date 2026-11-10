@@ -244,6 +244,16 @@
   background: rgba(255, 255, 255, 0.22);
 }
 
+.btn-copiar-ficha {
+  background: rgba(37, 211, 102, 0.15);
+  color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.35);
+}
+
+.btn-copiar-ficha:hover {
+  background: rgba(37, 211, 102, 0.28);
+}
+
 .btn-editar-prod {
   background: rgba(212, 175, 55, 0.18);
   color: #d4af37;

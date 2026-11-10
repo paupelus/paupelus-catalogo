@@ -118,6 +118,9 @@ export async function cargarListaProductos(consultar = true) {
             <button class="card-action-btn btn-copiar-link" data-id="${p.id}">
               🔗 Copiar link
             </button>
+            <button class="card-action-btn btn-copiar-ficha" data-id="${p.id}" title="Copiar ficha de venta lista para WhatsApp">
+              📲 Ficha WhatsApp
+            </button>
             <button class="card-action-btn btn-editar-prod" data-id="${p.id}">
               Editar
             </button>
@@ -220,6 +223,68 @@ export async function cargarListaProductos(consultar = true) {
         } catch (err) {
           console.error('Error al copiar link:', err);
           prompt('Copia el link del producto:', url);
+        }
+      });
+    });
+
+    // Eventos Copiar Ficha WhatsApp
+    listaProductos.querySelectorAll('.btn-copiar-ficha').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const p = listaProductosMemoria.find(item => String(item.id) === String(id));
+        if (!p) return;
+
+        let tagLabel = 'Peluca';
+        if (p.categoria === 'pelucas') {
+          tagLabel = p.subcategoria === 'lacefront' ? 'Peluca Lace Front' : 'Peluca Clásica';
+        } else if (p.categoria === 'accesorios') {
+          tagLabel = 'Accesorio Especializado';
+        }
+
+        const url = `${window.location.origin}/?producto=${p.id}`;
+        const videoHint = p.video_url
+          ? '🎥 *Toca el enlace de abajo para verla en VIDEO con movimiento real:*'
+          : '✨ *Toca el enlace de abajo para ver fotos en detalle y disponibilidad:*';
+
+        const specsParts = [];
+        if (p.color) specsParts.push(`✨ *Tono:* ${p.color}`);
+        if (p.largo_cm && p.tipo) {
+          specsParts.push(`✨ *Largo:* ${p.largo_cm} cm | Textura: ${p.tipo}`);
+        } else if (p.largo_cm) {
+          specsParts.push(`✨ *Largo:* ${p.largo_cm} cm`);
+        } else if (p.tipo) {
+          specsParts.push(`✨ *Textura:* ${p.tipo}`);
+        }
+        specsParts.push(`✨ *Precio:* ${formatPrice(p.precio)} COP`);
+        if (p.categoria === 'pelucas') {
+          specsParts.push('✨ *Material:* Fibra termorresistente de alta gama (soporta 180°C)');
+          specsParts.push('✨ *Acabado:* Simulación ultra realista de cuero cabelludo');
+        }
+
+        const mensajeFicha = `¡Hola! 💖 Con gusto, aquí tienes los detalles de la *${tagLabel} ${p.nombre}*:\n\n${specsParts.join('\n')}\n\n${videoHint}\n${url}`;
+
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(mensajeFicha);
+          } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = mensajeFicha;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+          }
+
+          const btnEl = e.currentTarget;
+          btnEl.innerText = '✅ Ficha copiada';
+          setTimeout(() => {
+            btnEl.innerText = '📲 Ficha WhatsApp';
+          }, 2000);
+        } catch (err) {
+          console.error('Error al copiar ficha:', err);
+          prompt('Copia la ficha de la peluca:', mensajeFicha);
         }
       });
     });

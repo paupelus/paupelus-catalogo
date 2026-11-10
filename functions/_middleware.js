@@ -26,7 +26,7 @@ export async function onRequest(context) {
 
   try {
     // Consultar el producto en Supabase REST API
-    const apiUrl = `${SUPABASE_URL}/rest/v1/productos?id=eq.${encodeURIComponent(productoId)}&select=id,nombre,precio,foto_url,descripcion,color,largo_cm,tipo,categoria,subcategoria&limit=1`;
+    const apiUrl = `${SUPABASE_URL}/rest/v1/productos?id=eq.${encodeURIComponent(productoId)}&select=id,nombre,precio,foto_url,video_url,descripcion,color,largo_cm,tipo,categoria,subcategoria&limit=1`;
     
     const sbRes = await fetch(apiUrl, {
       headers: {
@@ -80,6 +80,7 @@ export async function onRequest(context) {
 
     // Descripción optimizada para vista previa de WhatsApp
     const descParts = [];
+    if (prod.video_url) descParts.push('🎥 Video con movimiento real');
     if (precioTexto) descParts.push(precioTexto);
     if (specs) descParts.push(specs);
     if (prod.descripcion) descParts.push(prod.descripcion);

@@ -750,7 +750,7 @@ function sendOrderToWhatsApp(formaPago) {
 }
 
 // Lightbox Modal para Vista Detallada
-function openProductModal(productId) {
+function openProductModal(productId, defaultTab = 'foto') {
   const item = CATALOG_PRODUCTS.find(p => String(p.id) === String(productId));
   if (!item) return;
 
@@ -762,6 +762,7 @@ function openProductModal(productId) {
   const descEl = document.getElementById('lightboxDesc');
   const specsEl = document.getElementById('lightboxSpecs');
   const addBtn = document.getElementById('lightboxAddBtn');
+  const waBtn = document.getElementById('lightboxWhatsAppBtn');
 
   if (!modal) return;
 
@@ -870,8 +871,19 @@ function openProductModal(productId) {
     tabVideoBtn.onclick = () => activarTab('video');
   }
 
-  // Siempre abrir por defecto en la pestaña FOTO
-  activarTab('foto');
+  // Configurar pestaña inicial (priorizar video si se solicita y existe video)
+  if (defaultTab === 'video' && item.videoUrl) {
+    activarTab('video');
+  } else {
+    activarTab('foto');
+  }
+
+  // Configurar enlace directo a WhatsApp para compra rápida
+  if (waBtn) {
+    const waPhone = '573185182292';
+    const waText = `¡Hola Paupelus! 💖 Me encantó la ${item.name} (${formatPrice(item.price)}). Quiero consultar disponibilidad y coordinar el envío.`;
+    waBtn.href = `https://wa.me/${waPhone}?text=${encodeURIComponent(waText)}`;
+  }
 
   specsEl.innerHTML = item.specs.map(s => `<span class="spec-pill">${s}</span>`).join('');
 
@@ -1434,7 +1446,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (productoId) {
     const itemEncontrado = CATALOG_PRODUCTS.find(p => String(p.id) === String(productoId));
     if (itemEncontrado) {
-      openProductModal(itemEncontrado.id);
+      const tabInicial = itemEncontrado.videoUrl ? 'video' : 'foto';
+      openProductModal(itemEncontrado.id, tabInicial);
     }
   }
 
