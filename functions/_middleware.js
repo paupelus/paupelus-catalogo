@@ -91,7 +91,7 @@ export async function onRequest(context) {
     const origin = url.origin.replace(/^http:/, 'https:');
     const canonicalUrl = url.href.replace(/^http:/, 'https:');
     const ogImageUrl = prod.foto_url 
-      ? `${origin}/og-img/${encodeURIComponent(prod.id)}.webp`
+      ? `${origin}/og-img/${encodeURIComponent(prod.id)}.jpg`
       : `${origin}/og-image.jpg`;
 
     // Reescritura al vuelo con HTMLRewriter de Cloudflare Workers
@@ -124,17 +124,17 @@ export async function onRequest(context) {
       .on('meta[property="og:image"]', {
         element(e) {
           e.setAttribute('content', ogImageUrl);
-          e.after(`<meta property="og:image:secure_url" content="${ogImageUrl}">\n  <meta property="og:image:type" content="image/webp">`, { html: true });
+          e.after(`<meta property="og:image:secure_url" content="${ogImageUrl}">\n  <meta property="og:image:type" content="image/jpeg">`, { html: true });
         }
       })
       .on('meta[property="og:image:width"]', {
         element(e) {
-          e.remove();
+          e.setAttribute('content', '800');
         }
       })
       .on('meta[property="og:image:height"]', {
         element(e) {
-          e.remove();
+          e.setAttribute('content', '800');
         }
       })
       .on('meta[property="og:image:alt"]', {
