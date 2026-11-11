@@ -39,6 +39,7 @@ async function fetchProductos() {
         id: row.id,
         category: row.categoria,
         subcategoria: row.subcategoria || null,
+        numero_exhibicion: row.numero_exhibicion != null ? row.numero_exhibicion : null,
         tag: tagLabel,
         name: row.nombre,
         specs: [row.color, row.largo_cm ? `${row.largo_cm} cm` : null, row.tipo].filter(Boolean),
@@ -84,12 +85,20 @@ function renderCatalog(filter = 'all', searchQuery = '', subcategoria = '') {
   const container = document.getElementById('catalogGrid');
   if (!container) return;
 
+  const cleanQuery = searchQuery.trim().toLowerCase();
+  const numMatch = cleanQuery.match(/^(?:n[o°.]*|#|numero|num)?\s*(\d+)$/i);
+  const numQuery = numMatch ? parseInt(numMatch[1], 10) : null;
+
   const filtered = CATALOG_PRODUCTS.filter(item => {
     const matchesCategory = filter === 'all' || item.category === filter;
     const matchesSubcategoria = !subcategoria || item.subcategoria === subcategoria;
     const matchesFilter = matchesCategory && matchesSubcategoria;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.specs.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesNumber = numQuery !== null && item.numero_exhibicion === numQuery;
+    const matchesSearch = !cleanQuery ||
+                          matchesNumber ||
+                          item.name.toLowerCase().includes(cleanQuery) ||
+                          item.specs.some(s => s.toLowerCase().includes(cleanQuery));
     return matchesFilter && matchesSearch;
   });
 
@@ -125,6 +134,7 @@ function renderCatalog(filter = 'all', searchQuery = '', subcategoria = '') {
     <article class="product-card reveal" data-category="${item.category}" data-id="${item.id}">
       <div class="card-media-wrap" onclick="openProductModal('${item.id}')">
         <span class="card-badge">${item.tag}</span>
+        ${item.numero_exhibicion != null ? `<span class="card-badge card-badge-live" style="left:auto; right:1rem; background:rgba(212,175,55,0.9); color:#0c0b0f; font-weight:700; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.4);">N° ${item.numero_exhibicion}</span>` : ''}
         <img class="card-img-primary" src="${item.primaryImg}" alt="${item.name}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='logo dorado transparente.png'">
         ${secondaryImgHtml}
         
@@ -782,7 +792,7 @@ function openProductModal(productId, defaultTab = 'foto') {
     imgEl.style.display = 'block';
   }
 
-  tagEl.innerText = modalTag;
+  tagEl.innerText = modalTag + (item.numero_exhibicion != null ? ` · N° ${item.numero_exhibicion} en Live` : '');
   titleEl.innerText = item.name;
   priceEl.innerText = formatPrice(item.price);
 

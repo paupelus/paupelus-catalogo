@@ -31,7 +31,8 @@ import {
   purgarProductosAntiguos,
   cambiarVista,
   obtenerProductoPorId,
-  setCallbackEditar
+  setCallbackEditar,
+  inicializarBuscadorAdmin
 } from './listaProductos.js';
 
 import {
@@ -187,11 +188,12 @@ setCallbackEditar(async (id) => {
   scrollAlFormulario();
 });
 
-// 7. Inicialización de eventos de Reels, Avisar Live, Galería y Tutoriales
+// 7. Inicialización de eventos de Reels, Avisar Live, Galería, Tutoriales y Buscador
 inicializarEventosReels();
 inicializarAvisarLive();
 inicializarGaleriaAdmin();
 inicializarTutorialesAdmin();
+inicializarBuscadorAdmin();
 
 // 8. Inicialización al cargar
 (async function init() {

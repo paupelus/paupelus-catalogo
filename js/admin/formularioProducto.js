@@ -9,6 +9,7 @@ const colorInput = document.getElementById('color');
 const largoInput = document.getElementById('largo_cm');
 const tipoInput = document.getElementById('tipo');
 const precioInput = document.getElementById('precio');
+const numeroExhibicionInput = document.getElementById('numero_exhibicion');
 const descInput = document.getElementById('descripcion');
 const fotoInput = document.getElementById('fotoInput');
 const videoInput = document.getElementById('videoInput');
@@ -61,6 +62,10 @@ precioInput?.addEventListener('wheel', function (e) {
   e.preventDefault();
 });
 
+numeroExhibicionInput?.addEventListener('wheel', function (e) {
+  e.preventDefault();
+});
+
 largoInput?.addEventListener('wheel', function (e) {
   e.preventDefault();
 });
@@ -103,6 +108,9 @@ export function cargarDatosEnFormulario(prod) {
   largoInput.value = prod.largo_cm != null ? prod.largo_cm : '';
   tipoInput.value = prod.tipo || '';
   precioInput.value = prod.precio != null ? prod.precio : '';
+  if (numeroExhibicionInput) {
+    numeroExhibicionInput.value = prod.numero_exhibicion != null ? prod.numero_exhibicion : '';
+  }
   descInput.value = prod.descripcion || '';
 
   if (fotoInput) {
@@ -126,6 +134,7 @@ export function resetearFormulario() {
   productoEditandoId = null;
   productoEditandoData = null;
   if (productForm) productForm.reset();
+  if (numeroExhibicionInput) numeroExhibicionInput.value = '';
   actualizarVisibilidadSubcategoria();
   if (fotoInput) fotoInput.required = true;
   if (fotoStatus) fotoStatus.innerText = '';
@@ -244,6 +253,11 @@ export async function guardarOActualizarProducto(fotoProcesadaBlob) {
       video_url = productoEditandoData.video_url;
     }
 
+    const numExhibicionRaw = numeroExhibicionInput ? numeroExhibicionInput.value.trim() : '';
+    const numero_exhibicion = (numExhibicionRaw !== '' && !isNaN(parseInt(numExhibicionRaw, 10)))
+      ? parseInt(numExhibicionRaw, 10)
+      : null;
+
     const payload = {
       categoria,
       subcategoria,
@@ -252,6 +266,7 @@ export async function guardarOActualizarProducto(fotoProcesadaBlob) {
       largo_cm: largoInput.value ? parseInt(largoInput.value, 10) : null,
       tipo: tipoInput.value.trim() || null,
       precio,
+      numero_exhibicion,
       descripcion: descInput.value.trim() || null,
       foto_url,
       video_url,
