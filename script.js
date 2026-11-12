@@ -94,9 +94,21 @@ function renderCatalog(filter = 'all', searchQuery = '', subcategoria = '') {
     const matchesSubcategoria = !subcategoria || item.subcategoria === subcategoria;
     const matchesFilter = matchesCategory && matchesSubcategoria;
 
+    const isLiveQuery = ['live', 'en vivo', 'vivo', 'hoy', 'exhibidas', 'exhibida'].includes(cleanQuery);
+    const matchesLive = isLiveQuery && (item.numero_exhibicion != null && item.numero_exhibicion > 0);
+
+    const isLaceQuery = ['lace', 'lace front', 'lacefront'].includes(cleanQuery);
+    const matchesLace = isLaceQuery && (item.subcategoria === 'lacefront' || item.name.toLowerCase().includes('lace'));
+
+    const isClasicaQuery = ['clasica', 'clasicas', 'clásica', 'clásicas', 'seminatural'].includes(cleanQuery);
+    const matchesClasica = isClasicaQuery && (item.subcategoria === 'seminatural' || item.name.toLowerCase().includes('clasic'));
+
     const matchesNumber = numQuery !== null && item.numero_exhibicion === numQuery;
     const matchesSearch = !cleanQuery ||
                           matchesNumber ||
+                          matchesLive ||
+                          matchesLace ||
+                          matchesClasica ||
                           item.name.toLowerCase().includes(cleanQuery) ||
                           item.specs.some(s => s.toLowerCase().includes(cleanQuery));
     return matchesFilter && matchesSearch;

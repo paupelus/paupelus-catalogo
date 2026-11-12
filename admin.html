@@ -161,6 +161,16 @@
         <input type="text" id="adminSearchInput" class="admin-search-input" placeholder="Buscar por nombre o N° en vivo (1 - 14)..." autocomplete="off" spellcheck="false">
         <button type="button" id="adminSearchClear" class="admin-search-clear" title="Borrar búsqueda" aria-label="Limpiar búsqueda" style="display:none;">✕</button>
       </div>
+
+      <!-- Filtros Rápidos (En Vivo Hoy, Lace Front, Clásicas) -->
+      <div class="admin-quick-filters" id="adminQuickFilters">
+        <span class="quick-filters-label">Filtros:</span>
+        <button type="button" class="quick-filter-chip active" data-filter="todos">Todos</button>
+        <button type="button" class="quick-filter-chip chip-live" data-filter="live">🎙️ En Vivo Hoy</button>
+        <button type="button" class="quick-filter-chip" data-filter="lacefront">Peluca Lace Front</button>
+        <button type="button" class="quick-filter-chip" data-filter="seminatural">Peluca Clásica</button>
+      </div>
+
       <div id="adminSearchMeta" class="admin-search-meta" style="display:none;">
         <span id="adminSearchCount" class="admin-search-count"></span>
       </div>

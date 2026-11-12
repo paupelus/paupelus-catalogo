@@ -12,6 +12,7 @@ let listaProductosMemoria = [];
 let vistaActual = 'activos';
 let callbackEditar = null;
 let filtroBusqueda = '';
+let filtroSubcategoria = 'todos'; // 'todos' | 'live' | 'lacefront' | 'seminatural'
 let buscadorInicializado = false;
 
 export function setCallbackEditar(fn) {
@@ -54,6 +55,21 @@ function coincideBusqueda(producto, query) {
     return true;
   }
 
+  const esLive = producto.numero_exhibicion != null && producto.numero_exhibicion > 0;
+  const esLace = producto.subcategoria === 'lacefront' || normalizarTexto(producto.nombre).includes('lace');
+  const esClasica = producto.subcategoria === 'seminatural' || normalizarTexto(producto.nombre).includes('clasic');
+
+  // Atajos directos por frase completa
+  if (['live', 'en vivo', 'vivo', 'hoy', 'exhibidas', 'exhibida'].includes(qNormal)) {
+    return esLive;
+  }
+  if (['lace', 'lace front', 'lacefront', 'lace-front'].includes(qNormal)) {
+    return esLace;
+  }
+  if (['clasica', 'clasicas', 'seminatural', 'clasico', 'clasicos'].includes(qNormal)) {
+    return esClasica;
+  }
+
   const nombreNorm = normalizarTexto(producto.nombre);
   const colorNorm = normalizarTexto(producto.color);
   const tipoNorm = normalizarTexto(producto.tipo);
@@ -61,13 +77,22 @@ function coincideBusqueda(producto, query) {
   const subcatNorm = normalizarTexto(producto.subcategoria);
   const numExhibicionStr = producto.numero_exhibicion != null ? String(producto.numero_exhibicion) : '';
 
-  // Búsqueda por palabras (permite "chocolate 12", "peluca chocolate", etc.)
+  // Búsqueda por palabras (permite "chocolate 12", "lace chocolate", "live 5", etc.)
   const palabras = qNormal.split(/\s+/).filter(Boolean);
   return palabras.every(palabra => {
     const numPalabraMatch = palabra.match(/^(?:n[o°.]*|#)?(\d+)$/i);
     const numPalabra = numPalabraMatch ? parseInt(numPalabraMatch[1], 10) : null;
     if (numPalabra !== null && producto.numero_exhibicion === numPalabra) {
       return true;
+    }
+    if (['live', 'vivo', 'hoy'].includes(palabra)) {
+      return esLive;
+    }
+    if (['lace', 'lacefront', 'front'].includes(palabra)) {
+      return esLace;
+    }
+    if (['clasica', 'clasicas', 'seminatural'].includes(palabra)) {
+      return esClasica;
     }
     return nombreNorm.includes(palabra) ||
            colorNorm.includes(palabra) ||
@@ -123,30 +148,55 @@ export async function cambiarVista(nuevaVista) {
 }
 
 export function inicializarBuscadorAdmin() {
-  if (buscadorInicializado || !adminSearchInput) return;
+  if (buscadorInicializado) return;
   buscadorInicializado = true;
 
-  adminSearchInput.addEventListener('input', () => {
-    filtroBusqueda = adminSearchInput.value.trim();
-    if (adminSearchClear) {
-      adminSearchClear.style.display = filtroBusqueda ? 'flex' : 'none';
-    }
-    renderizarListaProductos();
-  });
+  if (adminSearchInput) {
+    adminSearchInput.addEventListener('input', () => {
+      filtroBusqueda = adminSearchInput.value.trim();
+      if (adminSearchClear) {
+        adminSearchClear.style.display = filtroBusqueda ? 'flex' : 'none';
+      }
+      renderizarListaProductos();
+    });
 
-  adminSearchClear?.addEventListener('click', () => {
-    limpiarBuscadorAdmin();
-  });
+    adminSearchClear?.addEventListener('click', () => {
+      limpiarBuscadorAdmin(false);
+    });
 
-  adminSearchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      limpiarBuscadorAdmin();
-    }
-  });
+    adminSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        limpiarBuscadorAdmin(false);
+      }
+    });
+  }
+
+  const quickFilters = document.getElementById('adminQuickFilters');
+  if (quickFilters) {
+    quickFilters.querySelectorAll('.quick-filter-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        const filterVal = e.currentTarget.getAttribute('data-filter') || 'todos';
+        filtroSubcategoria = filterVal;
+        quickFilters.querySelectorAll('.quick-filter-chip').forEach(c => {
+          c.classList.toggle('active', c === e.currentTarget);
+        });
+        renderizarListaProductos();
+      });
+    });
+  }
 }
 
-export function limpiarBuscadorAdmin() {
+export function limpiarBuscadorAdmin(resetChips = false) {
   filtroBusqueda = '';
+  if (resetChips) {
+    filtroSubcategoria = 'todos';
+    const quickFilters = document.getElementById('adminQuickFilters');
+    if (quickFilters) {
+      quickFilters.querySelectorAll('.quick-filter-chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-filter') === 'todos');
+      });
+    }
+  }
   if (adminSearchInput) {
     adminSearchInput.value = '';
     adminSearchInput.focus();
@@ -194,9 +244,24 @@ export function renderizarListaProductos() {
       return vistaActual === 'activos' ? p.activo : !p.activo;
     });
 
-    const itemsAMostrar = itemsBase.filter(p => coincideBusqueda(p, filtroBusqueda));
+    // 1. Filtrado por Chip (Todos | En Vivo Hoy | Lace Front | Clásica)
+    const itemsFiltradosChip = itemsBase.filter(p => {
+      if (filtroSubcategoria === 'live') {
+        return p.numero_exhibicion != null && p.numero_exhibicion > 0;
+      }
+      if (filtroSubcategoria === 'lacefront') {
+        return p.subcategoria === 'lacefront' || normalizarTexto(p.nombre).includes('lace');
+      }
+      if (filtroSubcategoria === 'seminatural') {
+        return p.subcategoria === 'seminatural' || normalizarTexto(p.nombre).includes('clasic');
+      }
+      return true;
+    });
 
-    // Si la búsqueda es por número exacto, priorizar el producto que coincide con ese número
+    // 2. Filtrado por Búsqueda Inteligente
+    const itemsAMostrar = itemsFiltradosChip.filter(p => coincideBusqueda(p, filtroBusqueda));
+
+    // 3. Ordenamiento inteligente:
     const qNormal = normalizarTexto(filtroBusqueda);
     const soloNumeroMatch = qNormal.match(/^(?:n[o°.]*|#|numero|num)?\s*(\d+)$/i);
     const numBuscado = soloNumeroMatch ? parseInt(soloNumeroMatch[1], 10) : null;
@@ -206,16 +271,29 @@ export function renderizarListaProductos() {
         if (a.numero_exhibicion === numBuscado && b.numero_exhibicion !== numBuscado) return -1;
         if (b.numero_exhibicion === numBuscado && a.numero_exhibicion !== numBuscado) return 1;
       }
+      // Si el filtro "live" está activo o se busca "live/hoy", ordenar secuencialmente 1, 2, 3... 14
+      if (filtroSubcategoria === 'live' || ['live', 'en vivo', 'vivo', 'hoy', 'exhibidas'].includes(qNormal)) {
+        const numA = a.numero_exhibicion || 9999;
+        const numB = b.numero_exhibicion || 9999;
+        return numA - numB;
+      }
       return (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' });
     });
 
-    // Contador de búsqueda
+    // Contador de búsqueda y filtros
     if (adminSearchMeta && adminSearchCount) {
-      if (filtroBusqueda) {
+      const hayFiltro = filtroBusqueda || filtroSubcategoria !== 'todos';
+      if (hayFiltro) {
         adminSearchMeta.style.display = 'flex';
         const total = itemsBase.length;
         const coincidencias = itemsAMostrar.length;
-        adminSearchCount.innerHTML = `Mostrando <strong>${coincidencias}</strong> de ${total} productos para "<em>${escapeHtml(filtroBusqueda)}</em>"`;
+        const partesFiltro = [];
+        if (filtroSubcategoria === 'live') partesFiltro.push('🎙️ En Vivo Hoy');
+        if (filtroSubcategoria === 'lacefront') partesFiltro.push('Lace Front');
+        if (filtroSubcategoria === 'seminatural') partesFiltro.push('Pelucas Clásicas');
+        if (filtroBusqueda) partesFiltro.push(`búsqueda: "<em>${escapeHtml(filtroBusqueda)}</em>"`);
+
+        adminSearchCount.innerHTML = `Mostrando <strong>${coincidencias}</strong> de ${total} productos (${partesFiltro.join(' · ')})`;
       } else {
         adminSearchMeta.style.display = 'none';
         adminSearchCount.innerHTML = '';
@@ -223,23 +301,24 @@ export function renderizarListaProductos() {
     }
 
     if (itemsAMostrar.length === 0) {
-      if (filtroBusqueda) {
+      const hayFiltro = filtroBusqueda || filtroSubcategoria !== 'todos';
+      if (hayFiltro) {
         listaProductos.innerHTML = `
           <div style="text-align:center; padding:3rem 1rem; color:var(--text-muted);">
             <p style="font-size:1.1rem; margin-bottom:0.4rem; color:var(--text-main);">
-              🔍 No se encontró ninguna peluca o producto para "<strong>${escapeHtml(filtroBusqueda)}</strong>"
+              🔍 No se encontraron productos con los filtros seleccionados
             </p>
             <p style="font-size:0.85rem; max-width:440px; margin:0 auto 1.2rem auto;">
-              Verifica el nombre (ej. Chocolate) o busca directamente por el número en que está exhibida en el Live (1 - 14).
+              Prueba seleccionando "Todos" o verificando el término de búsqueda.
             </p>
             <button type="button" class="card-action-btn" id="btnRestablecerBusqueda" style="padding:0.6rem 1.2rem; font-size:0.85rem; background:rgba(212,175,55,0.15); color:var(--gold-primary); border-color:var(--gold-primary);">
-              ✕ Limpiar búsqueda
+              ✕ Limpiar filtros y búsqueda
             </button>
           </div>
         `;
         const btnRestablecer = document.getElementById('btnRestablecerBusqueda');
         btnRestablecer?.addEventListener('click', () => {
-          limpiarBuscadorAdmin();
+          limpiarBuscadorAdmin(true);
         });
       } else if (vistaActual === 'papelera') {
         listaProductos.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">La papelera está vacía.</p>`;
