@@ -151,13 +151,13 @@ function renderCatalog(filter = 'all', searchQuery = '', subcategoria = '') {
         ${secondaryImgHtml}
         
         <div class="card-quick-actions" onclick="event.stopPropagation()">
-          <button class="card-action-btn" onclick="openProductModal('${item.id}')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            Vista Rápida
+          <button class="card-action-btn btn-wa-direct" title="Pedir esta peluca por WhatsApp" onclick="orderProductViaWhatsApp('${item.id}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg>
+            Pedir por WhatsApp
           </button>
-          <button class="card-action-btn" onclick="addToCart('${item.id}')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-            Agregar
+          <button class="card-action-btn" title="Ver fotos y detalles" onclick="openProductModal('${item.id}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            Ver
           </button>
         </div>
       </div>
@@ -172,9 +172,14 @@ function renderCatalog(filter = 'all', searchQuery = '', subcategoria = '') {
 
         <div class="card-footer-row">
           <div class="card-price">${formatPrice(item.price)}</div>
-          <button class="card-btn-add" title="Agregar a la selección" onclick="addToCart('${item.id}')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </button>
+          <div style="display:flex; gap:0.45rem; align-items:center;">
+            <button class="card-btn-wa" title="Pedir por WhatsApp directamente" onclick="event.stopPropagation(); orderProductViaWhatsApp('${item.id}')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg>
+            </button>
+            <button class="card-btn-add" title="Agregar a la selección" onclick="event.stopPropagation(); addToCart('${item.id}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+          </div>
         </div>
       </div>
     </article>
@@ -771,6 +776,35 @@ function sendOrderToWhatsApp(formaPago) {
   updateCartUI();
 }
 
+// Pedido Directo de Producto por WhatsApp (Sin pasar por carrito ni formularios)
+function orderProductViaWhatsApp(productId) {
+  const item = CATALOG_PRODUCTS.find(p => String(p.id) === String(productId));
+  if (!item) return;
+
+  const phone = '573185182292';
+  const specsText = (item.specs && item.specs.length > 0) ? item.specs.join(' · ') : '';
+  const numLive = item.numero_exhibicion != null ? `\n🏷️ *N° de Exhibición:* #${item.numero_exhibicion}` : '';
+
+  let fullImgUrl = item.primaryImg || '';
+  if (fullImgUrl && !fullImgUrl.startsWith('http://') && !fullImgUrl.startsWith('https://')) {
+    fullImgUrl = window.location.origin + (fullImgUrl.startsWith('/') ? '' : '/') + fullImgUrl;
+  }
+
+  const directWebUrl = `${window.location.origin}${window.location.pathname}?producto=${item.id}`;
+
+  const message = 
+    `¡Hola Paupelus! 👋✨ Quiero pedir esta peluca:\n\n` +
+    `👑 *Peluca:* ${item.name} (${item.tag || 'Peluca'})${numLive}\n` +
+    (specsText ? `✨ *Detalles:* ${specsText}\n` : '') +
+    `💰 *Precio:* ${formatPrice(item.price)}\n\n` +
+    (fullImgUrl ? `📸 *Foto:* ${fullImgUrl}\n` : '') +
+    `🔗 *Ver en catálogo:* ${directWebUrl}\n\n` +
+    `¿Me confirmas disponibilidad y cómo coordinamos el pago y despacho? ¡Muchas gracias!`;
+
+  const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  window.open(waUrl, '_blank');
+}
+
 // Lightbox Modal para Vista Detallada
 function openProductModal(productId, defaultTab = 'foto') {
   const item = CATALOG_PRODUCTS.find(p => String(p.id) === String(productId));
@@ -900,6 +934,13 @@ function openProductModal(productId, defaultTab = 'foto') {
   }
 
   specsEl.innerHTML = item.specs.map(s => `<span class="spec-pill">${s}</span>`).join('');
+
+  const waOrderBtn = document.getElementById('lightboxWhatsAppOrderBtn');
+  if (waOrderBtn) {
+    waOrderBtn.onclick = () => {
+      orderProductViaWhatsApp(item.id);
+    };
+  }
 
   addBtn.onclick = () => {
     addToCart(item.id);

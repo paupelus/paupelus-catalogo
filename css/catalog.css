@@ -344,3 +344,74 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Botón Directo WhatsApp en Tarjeta y Modal */
+.card-btn-wa {
+  background: #25D366;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.35);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-btn-wa:hover {
+  background: #20ba59;
+  transform: scale(1.1);
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.5);
+}
+
+.card-action-btn.btn-wa-direct {
+  flex: 1.4;
+  background: #25D366 !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.card-action-btn.btn-wa-direct:hover {
+  background: #20ba59 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  transform: translateY(-2px);
+}
+
+.btn-whatsapp-direct-modal {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: #25D366;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.9rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.35);
+  transition: all 0.25s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-whatsapp-direct-modal:hover {
+  background: #20ba59;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(37, 211, 102, 0.5);
+}
+
+.btn-whatsapp-direct-modal:active {
+  transform: scale(0.98);
+}
