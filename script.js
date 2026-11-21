@@ -791,10 +791,13 @@ function orderProductViaWhatsApp(productId) {
   }
 
   const directWebUrl = `${window.location.origin}${window.location.pathname}?producto=${item.id}`;
+  const isPeluca = item.category === 'pelucas';
+  const headerText = isPeluca ? '¡Hola Paupelus! 👋✨ Quiero pedir esta peluca:' : '¡Hola Paupelus! 👋✨ Quiero pedir este producto:';
+  const labelItem = isPeluca ? '👑 *Peluca:*' : '💎 *Producto:*';
 
   const message = 
-    `¡Hola Paupelus! 👋✨ Quiero pedir esta peluca:\n\n` +
-    `👑 *Peluca:* ${item.name} (${item.tag || 'Peluca'})${numLive}\n` +
+    `${headerText}\n\n` +
+    `${labelItem} ${item.name} (${item.tag || 'Accesorio'})${numLive}\n` +
     (specsText ? `✨ *Detalles:* ${specsText}\n` : '') +
     `💰 *Precio:* ${formatPrice(item.price)}\n\n` +
     (fullImgUrl ? `📸 *Foto:* ${fullImgUrl}\n` : '') +
@@ -802,8 +805,12 @@ function orderProductViaWhatsApp(productId) {
     `¿Me confirmas disponibilidad y cómo coordinamos el pago y despacho? ¡Muchas gracias!`;
 
   const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-  window.open(waUrl, '_blank');
+  const win = window.open(waUrl, '_blank');
+  if (!win || win.closed || typeof win.closed === 'undefined') {
+    window.location.href = waUrl;
+  }
 }
+window.orderProductViaWhatsApp = orderProductViaWhatsApp;
 
 // Lightbox Modal para Vista Detallada
 function openProductModal(productId, defaultTab = 'foto') {
@@ -1844,4 +1851,5 @@ window.openTutorialModal = openTutorialModal;
 window.closeTutorialModal = closeTutorialModal;
 window.addToCart = addToCart;
 window.updateCartQty = updateCartQty;
+window.orderProductViaWhatsApp = orderProductViaWhatsApp;
 
