@@ -33,7 +33,7 @@ import {
   obtenerProductoPorId,
   setCallbackEditar,
   inicializarBuscadorAdmin
-} from './listaProductos.js';
+} from './listaProductos.js?v=2.1';
 
 import {
   cargarReels,

@@ -42,6 +42,58 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+const copyFeedbackTimers = new WeakMap();
+
+/**
+ * Copia texto al portapapeles de forma silenciosa usando Clipboard API con fallback a execCommand.
+ * Evita diálogos modales (prompt/alert) que bloquean el flujo durante un Live.
+ */
+async function copiarTextoAlPortapapeles(texto) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    } catch (err) {
+      console.warn('Clipboard API falló, intentando fallback:', err);
+    }
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = texto;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.top = '-9999px';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  try {
+    textarea.focus({ preventScroll: true });
+    textarea.select();
+    textarea.setSelectionRange(0, texto.length);
+    return document.execCommand('copy');
+  } catch (err) {
+    console.error('Error al copiar al portapapeles:', err);
+    return false;
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
+/**
+ * Muestra feedback visual temporal en el botón sin bloquear la pantalla.
+ */
+function mostrarFeedbackCopia(btnEl, copiado, textoExito, textoOriginal) {
+  if (!btnEl) return;
+  const prevTimer = copyFeedbackTimers.get(btnEl);
+  if (prevTimer) clearTimeout(prevTimer);
+
+  btnEl.innerText = copiado ? textoExito : '⚠️ No se pudo copiar';
+  const timerId = setTimeout(() => {
+    btnEl.innerText = textoOriginal;
+    copyFeedbackTimers.delete(btnEl);
+  }, 2000);
+  copyFeedbackTimers.set(btnEl, timerId);
+}
+
 function coincideBusqueda(producto, query) {
   if (!query) return true;
   const qNormal = normalizarTexto(query);
@@ -460,39 +512,19 @@ export function renderizarListaProductos() {
     // Eventos Copiar Link
     listaProductos.querySelectorAll('.btn-copiar-link').forEach(btn => {
       btn.addEventListener('click', async (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
+        const btnEl = e.currentTarget;
+        const id = btnEl.getAttribute('data-id');
         const url = `${window.location.origin}/?producto=${id}`;
-
-        try {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            await navigator.clipboard.writeText(url);
-          } else {
-            const textarea = document.createElement('textarea');
-            textarea.value = url;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-          }
-
-          const btnEl = e.currentTarget;
-          btnEl.innerText = '✅ Copiado';
-          setTimeout(() => {
-            btnEl.innerText = '🔗 Copiar link';
-          }, 2000);
-        } catch (err) {
-          console.error('Error al copiar link:', err);
-          prompt('Copia el link del producto:', url);
-        }
+        const copiado = await copiarTextoAlPortapapeles(url);
+        mostrarFeedbackCopia(btnEl, copiado, '✅ Copiado', '🔗 Copiar link');
       });
     });
 
     // Eventos Copiar Ficha WhatsApp
     listaProductos.querySelectorAll('.btn-copiar-ficha').forEach(btn => {
       btn.addEventListener('click', async (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
+        const btnEl = e.currentTarget;
+        const id = btnEl.getAttribute('data-id');
         const p = listaProductosMemoria.find(item => String(item.id) === String(id));
         if (!p) return;
 
@@ -526,29 +558,8 @@ export function renderizarListaProductos() {
 
         const mensajeFicha = `¡Hola! 💖 Con gusto, aquí tienes los detalles de la *${tagLabel} ${p.nombre}*:\n\n${specsParts.join('\n')}\n\n${videoHint}\n${url}`;
 
-        try {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            await navigator.clipboard.writeText(mensajeFicha);
-          } else {
-            const textarea = document.createElement('textarea');
-            textarea.value = mensajeFicha;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-          }
-
-          const btnEl = e.currentTarget;
-          btnEl.innerText = '✅ Ficha copiada';
-          setTimeout(() => {
-            btnEl.innerText = '📲 Ficha WhatsApp';
-          }, 2000);
-        } catch (err) {
-          console.error('Error al copiar ficha:', err);
-          prompt('Copia la ficha de la peluca:', mensajeFicha);
-        }
+        const copiado = await copiarTextoAlPortapapeles(mensajeFicha);
+        mostrarFeedbackCopia(btnEl, copiado, '✅ Ficha copiada', '📲 Ficha WhatsApp');
       });
     });
 
